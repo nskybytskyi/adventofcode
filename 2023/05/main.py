@@ -9,6 +9,7 @@ ValueRange = collections.namedtuple("ValueRange", ["start", "length"])
 
 
 class MappingRange:
+    """a linear mapping on a range"""
     def __init__(self, destination: int, source: int, length: int):
         self.destination, self.length = destination, length
         self.source_start = source
@@ -37,6 +38,7 @@ class MappingRange:
 
 
 class PiecewiseLinearMapping:
+    """a piecewise-linear mapping"""
     def __init__(self, ranges: list[MappingRange]):
         self.ranges = ranges
 

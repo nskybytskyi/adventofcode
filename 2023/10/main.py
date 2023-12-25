@@ -8,27 +8,18 @@ def read_and_parse(filename: str) -> list[str]:
         return file.read().splitlines()
 
 
-def nei(grid, r, c):
-    if grid[r][c] == "S":
+def nei(grid, row, col):
+    neighbors = [(row - 1, col), (row, col - 1), (row, col + 1), (row + 1, col)]
+
+    if grid[row][col] == "S":
         return [
             (nr, nc)
-            for nr, nc in [(r - 1, c), (r, c - 1), (r, c + 1), (r + 1, c)]
-            if (r, c) in nei(grid, nr, nc)
+            for nr, nc in neighbors
+            if (row, col) in nei(grid, nr, nc)
         ]
-    elif grid[r][c] == "|":
-        return (r - 1, c), (r + 1, c)
-    elif grid[r][c] == "-":
-        return (r, c - 1), (r, c + 1)
-    elif grid[r][c] == "L":
-        return (r - 1, c), (r, c + 1)
-    elif grid[r][c] == "J":
-        return (r - 1, c), (r, c - 1)
-    elif grid[r][c] == "7":
-        return (r, c - 1), (r + 1, c)
-    elif grid[r][c] == "F":
-        return (r, c + 1), (r + 1, c)
-    else:
-        return []
+
+    mapping = {'|': [0, 3], '-': [1, 2], 'L': [0, 2], 'J': [0, 1], '7': [1, 3], 'F': [2, 3]}
+    return [neighbors[idx] for idx in mapping[grid[row][col]]]
 
 
 def find_s(grid):
@@ -37,48 +28,48 @@ def find_s(grid):
         for col in range(cols):
             if grid[row][col] == "S":
                 return row, col
+    assert False
 
 
 def solve_part_one(data: list[str]) -> int:
     rows, cols = len(data), len(data[0])
-    sr, sc = find_s(data)
-    q = collections.deque([(sr, sc)])
-    d = [[-1] * cols for _ in range(rows)]
-    d[sr][sc] = 0
+    start_row, start_col = find_s(data)
+    queue = collections.deque([(start_row, start_col)])
+    dist = [[-1] * cols for _ in range(rows)]
+    dist[start_row][start_col] = 0
 
-    while q:
-        r, c = q.popleft()
-        for nr, nc in nei(data, r, c):
-            if 0 <= nr < rows and 0 <= nc < cols and d[nr][nc] == -1:
-                q.append((nr, nc))
-                d[nr][nc] = d[r][c] + 1
+    while queue:
+        row, col = queue.popleft()
+        for next_row, next_col in nei(data, row, col):
+            if 0 <= next_row < rows and 0 <= next_col < cols and dist[next_row][next_col] == -1:
+                queue.append((next_row, next_col))
+                dist[next_row][next_col] = dist[row][col] + 1
 
-    return max(d[r][c] for r in range(rows) for c in range(cols))
+    return max(dist[row][col] for row in range(rows) for col in range(cols))
 
 
 def area(fig: list[tuple[int, int]]) -> float:
     res = 0
-    for i in range(len(fig)):
-        p = fig[i - 1] if i else fig[-1]
-        q = fig[i]
-        res += (p[0] - q[0]) * (p[1] + q[1])
+    for i, curr in enumerate(fig):
+        prev = fig[i - 1] if i else fig[-1]
+        res += (prev[0] - curr[0]) * (prev[1] + curr[1])
     return abs(res / 2)
 
 
-def solve_part_two(data: list[str]) -> int:
+def solve_part_two(data: list[str]) -> float:
     rows, cols = len(data), len(data[0])
-    sr, sc = find_s(data)
-    path = [(sr, sc)]
+    start_row, start_col = find_s(data)
+    path = [(start_row, start_col)]
 
     while len(path) == 1 or path[-1] != path[0]:
-        r, c = path[-1]
-        for nr, nc in nei(data, r, c):
+        row, col = path[-1]
+        for next_row, next_col in nei(data, row, col):
             if (
-                0 <= nr < rows
-                and 0 <= nc < cols
-                and (len(path) < 2 or (nr, nc) != path[-2])
+                0 <= next_row < rows
+                and 0 <= next_col < cols
+                and (len(path) < 2 or (next_row, next_col) != path[-2])
             ):
-                path.append((nr, nc))
+                path.append((next_row, next_col))
                 break
 
     bound = len(path) - 1

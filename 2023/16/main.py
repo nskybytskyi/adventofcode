@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""The Floor Will Be Lava"""
 import collections
 
 

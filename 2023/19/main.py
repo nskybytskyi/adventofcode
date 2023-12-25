@@ -1,89 +1,96 @@
 #!/usr/bin/env python3
+"""Aplenty"""
 import collections
 import copy
 import math
 
-def read_and_parse(filename: str) -> list[str]:
+
+def read_and_parse(filename: str) -> tuple[list[str], list[str]]:
     with open(filename, "r", encoding="utf-8") as file:
         rules, parts = file.read().split('\n\n')
         return rules.split('\n'), parts.split('\n')
 
 
 def parse_rules(rules):
-    mp = {}
+    mapping = {}
     for rule in rules:
         name, steps = rule.split('{')
-        mp[name] = []
+        mapping[name] = []
         for step in steps[:-1].split(','):
             if ':' in step:
-                mp[name].append(step.split(':'))
+                mapping[name].append(step.split(':'))
             else:
-                mp[name].append(('True', step))
-    return mp
+                mapping[name].append(('True', step))
+    return mapping
 
 
 def solve_part_one(rules, parts) -> int:
-    mp = parse_rules(rules)
+    mapping = parse_rules(rules)
 
     ans = 0
     for part in parts:
-        x, m, a, s = [int(chunk[2:]) for chunk in part[1:-1].split(',')]
+        x_var, m_var, a_var, s_var = [
+            int(chunk[2:]) for chunk in part[1:-1].split(',')
+        ]
         rule = 'in'
         while rule not in 'AR':
-            for step, dest in mp[rule]:
+            for step, dest in mapping[rule]:
                 if eval(step):
                     rule = dest
                     break
         if rule == 'A':
-            ans += x + m + a + s
+            ans += x_var + m_var + a_var + s_var
     return ans
 
 
 class Block:
-    def __init__(self, mnx, mxx, mnm, mxm, mna, mxa, mns, mxs):
-        self.mn = {}
-        self.mx = {}
-        self.mn['x'], self.mx['x'] = mnx, mxx
-        self.mn['m'], self.mx['m'] = mnm, mxm
-        self.mn['a'], self.mx['a'] = mna, mxa
-        self.mn['s'], self.mx['s'] = mns, mxs
+    """4d range of parts"""
+    def __init__(self, *args):
+        mnx, mxx, mnm, mxm, mna, mxa, mns, mxs = args
+        self.lower_bound = {}
+        self.upper_bound = {}
+        self.lower_bound['x'], self.upper_bound['x'] = mnx, mxx
+        self.lower_bound['m'], self.upper_bound['m'] = mnm, mxm
+        self.lower_bound['a'], self.upper_bound['a'] = mna, mxa
+        self.lower_bound['s'], self.upper_bound['s'] = mns, mxs
 
     def split(self, step):
         if step == 'True':
             return self, Block(0, -1, 0, -1, 0, -1, 0, -1)
         var, sign, *val = step
         val = int(''.join(val))
+
         if sign == '>':
             good, bad = copy.deepcopy(self), copy.deepcopy(self)
-            good.mn[var] = max(good.mn[var], val + 1)
-            bad.mx[var] = min(bad.mx[var], val)
+            good.lower_bound[var] = max(good.lower_bound[var], val + 1)
+            bad.upper_bound[var] = min(bad.upper_bound[var], val)
             return good, bad
-        else:
-            good, bad = copy.deepcopy(self), copy.deepcopy(self)
-            good.mx[var] = min(good.mx[var], val - 1)
-            bad.mn[var] = max(bad.mn[var], val)
-            return good, bad
-    
+
+        good, bad = copy.deepcopy(self), copy.deepcopy(self)
+        good.upper_bound[var] = min(good.upper_bound[var], val - 1)
+        bad.lower_bound[var] = max(bad.lower_bound[var], val)
+        return good, bad
+
     def __bool__(self):
         return self.size() > 0
 
     def size(self):
-        return math.prod((self.mx[c] - self.mn[c] + 1) for c in 'xmas')
+        return math.prod((self.upper_bound[c] - self.lower_bound[c] + 1) for c in 'xmas')
 
 
 def solve_part_two(rules) -> int:
     ans = 0
-    mp = parse_rules(rules)
-    q = collections.deque([('in', Block(1, 4_000, 1, 4_000, 1, 4_000, 1, 4_000))])
-    while q:
-        rule, block = q.popleft()
+    mapping = parse_rules(rules)
+    queue = collections.deque([('in', Block(1, 4_000, 1, 4_000, 1, 4_000, 1, 4_000))])
+    while queue:
+        rule, block = queue.popleft()
         if rule == 'A':
             ans += block.size()
         elif rule != 'R':
-            for step, dest in mp[rule]:
+            for step, dest in mapping[rule]:
                 good, block = block.split(step)
                 if good:
-                    q.append((dest, good))
+                    queue.append((dest, good))
     return ans
 
 

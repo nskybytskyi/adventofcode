@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
-def read_and_parse(filename: str) -> list[str]:
+"""Parabolic Reflector Dish"""
+
+
+def read_and_parse(filename: str) -> list[list[str]]:
     with open(filename, "r", encoding="utf-8") as file:
         return list(map(list, file.read().splitlines()))
 
 
-def solve_part_one(a) -> int:
-    pass
+def solve_part_one(_) -> int:
+    return 0
 
 
-def solve_part_two(a) -> str:
-    pass
+def solve_part_two(_) -> int:
+    return 0
 
 
 def test():
@@ -17,10 +20,10 @@ def test():
 
 
 def main():
-    a = read_and_parse("input.txt")
-    part_one_answer = solve_part_one(a)
+    data = read_and_parse("input.txt")
+    part_one_answer = solve_part_one(data)
     print(f"Part One: {part_one_answer}")
-    part_two_answer = solve_part_two(a)
+    part_two_answer = solve_part_two(data)
     print(f"Part Two: {part_two_answer}")
 
 

@@ -33,24 +33,24 @@ def dynamic_programming(records: str, nums: list[int]) -> int:
     """count continuations from a given state"""
 
     @functools.cache
-    def dp(i: int, j: int, curr: int, prev: str) -> int:
+    def num_ways(i: int, j: int, curr: int, prev: str) -> int:
         if i == len(records):
             return j == len(nums)
 
         ans = 0
 
         if records[i] != "#" and not curr:
-            ans += dp(i + 1, j, 0, ".")
+            ans += num_ways(i + 1, j, 0, ".")
 
         if records[i] != "." and (curr or prev != "#") and j < len(nums):
             if curr + 1 == nums[j]:
-                ans += dp(i + 1, j + 1, 0, "#")
+                ans += num_ways(i + 1, j + 1, 0, "#")
             else:
-                ans += dp(i + 1, j, curr + 1, "#")
+                ans += num_ways(i + 1, j, curr + 1, "#")
 
         return ans
 
-    return dp(0, 0, 0, ".")
+    return num_ways(0, 0, 0, ".")
 
 
 def solve_part_one(data: list[tuple[str, list[int]]]) -> int:

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Step Counter"""
 import collections
 
 
@@ -7,90 +8,99 @@ def read_and_parse(filename: str) -> list[str]:
         return file.read().splitlines()
 
 
-def solve_part_one(a, steps=64) -> int:
-    R, C = len(a), len(a[0])
-    sr = sc = -1
-    for r in range(R):
-        for c in range(C):
-            if a[r][c] == 'S':
-                sr, sc = r, c
-    q = [{(sr, sc)}]
+def solve_part_one(grid: list[str], steps: int = 64) -> int:
+    rows, cols = len(grid), len(grid[0])
+    start_row = start_col = -1
+    for row in range(rows):
+        for col in range(cols):
+            if grid[row][col] == 'S':
+                start_row, start_col = row, col
+    queue = [{(start_row, start_col)}]
     for i in range(steps):
-        q.append(set())
-        for r, c in q[i]:
-            for nr, nc in (r-1,c),(r,c-1),(r,c+1),(r+1,c):
-                if 0 <= nr < R and 0 <= nc < C and a[nr][nc] != '#':
-                    q[i + 1].add((nr, nc))
-    return len(q[steps])
+        queue.append(set())
+        for row, col in queue[i]:
+            nei = (row-1,col),(row,col-1),(row,col+1),(row+1,col)
+            for next_row, next_col in nei:
+                if (
+                    0 <= next_row < rows and
+                    0 <= next_col < cols and
+                    grid[next_row][next_col] != '#'
+                ):
+                    queue[i + 1].add((next_row, next_col))
+    return len(queue[steps])
 
 
-def solve_part_two_naive(a, steps) -> int:
-    N = len(a)
-    R, C = len(a), len(a[0])
-    sr = sc = -1
-    for r in range(R):
-        for c in range(C):
-            if a[r][c] == 'S':
-                sr, sc = r, c
-    seen = {(sr, sc)}
+def solve_part_two_naive(grid: list[str], steps: int) -> int:
+    rows, cols = len(grid), len(grid[0])
+    start_row = start_col = -1
+    for row in range(rows):
+        for col in range(cols):
+            if grid[row][col] == 'S':
+                start_row, start_col = row, col
+    seen = {(start_row, start_col)}
     total = 0
-    q = collections.deque([(sr, sc)])
+    queue = collections.deque([(start_row, start_col)])
     for i in range(steps):
         if i % 2 == steps % 2:
-            total += len(q)
-        for _ in range(len(q)):
-            r, c = q.popleft()
-            for nr, nc in (r-1,c),(r,c-1),(r,c+1),(r+1,c):
-                if a[nr % R][nc % C] != '#' and (nr, nc) not in seen:
-                    seen.add((nr, nc))
-                    q.append((nr, nc))
-    return total + len(q)
+            total += len(queue)
+        for _ in range(len(queue)):
+            row, col = queue.popleft()
+            nei = (row-1,col),(row,col-1),(row,col+1),(row+1,col)
+            for next_row, next_col in nei:
+                if (
+                    grid[next_row % rows][next_col % cols] != '#' and
+                    (next_row, next_col) not in seen
+                ):
+                    seen.add((next_row, next_col))
+                    queue.append((next_row, next_col))
+    return total + len(queue)
 
 
-def solve_part_two(a, steps=26_501_365) -> int:
-    N = len(a)
-    M = N >> 1
+def solve_part_two(grid: list[str], steps: int = 26_501_365) -> int:
+    size = len(grid)
+    midpoint = size >> 1
 
     def key(state):
-        r, c, parity = state
-        return r % N, c % N, parity, r >= M, c >= M
+        row, col, parity = state
+        return row % size, col % size, parity, row >= midpoint, col >= midpoint
 
-    s = M, M, 0
-    q = collections.deque([s])
-    d = {key(s): 0}
+    start = midpoint, midpoint, 0
+    queue = collections.deque([start])
+    distance = {key(start): 0}
     unique = collections.defaultdict(set)
-    unique[key(s)].add(s)
+    unique[key(start)].add(start)
 
-    while q:
-        old_state = q.popleft()
+    while queue:
+        old_state = queue.popleft()
         old_group = key(old_state)
-        r, c, parity = old_state
+        row, col, parity = old_state
 
-        for nr, nc in (r - 1, c), (r, c - 1), (r, c + 1), (r + 1, c):
-            if a[nr % N][nc % N] == '#':
+        nei = (row - 1, col), (row, col - 1), (row, col + 1), (row + 1, col)
+        for next_row, next_col in nei:
+            if grid[next_row % size][next_col % size] == '#':
                 continue
 
-            new_state = nr, nc, 1 - parity
+            new_state = next_row, next_col, 1 - parity
             new_group = key(new_state)
 
             if (
-                new_group not in d or (
-                    d[new_group] == d[old_group] + 1 and 
+                new_group not in distance or (
+                    distance[new_group] == distance[old_group] + 1 and
                     new_state not in unique[new_group]
                 )
             ):
-                q.append(new_state)
-                d[new_group] = d[old_group] + 1
+                queue.append(new_state)
+                distance[new_group] = distance[old_group] + 1
                 unique[new_group].add(new_state)
 
     total = 0
 
-    for group, distance in d.items():
-        r, c, parity, *_ = group
+    for group, distance in distance.items():
+        row, col, parity, *_ = group
         if parity != steps & 1 or steps < distance:
             continue
 
-        blocks = (steps - distance) // (2 * N) + 1
+        blocks = (steps - distance) // (2 * size) + 1
         if len(unique[group]) == 1:
             total += blocks**2
         elif len(unique[group]) == 2:

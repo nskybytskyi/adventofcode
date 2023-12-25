@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Pulse Propagation"""
 import collections
 import copy
 import itertools
@@ -78,7 +79,7 @@ def solve_part_two(graph, types, initial_state, initial_parents) -> int:
             if module == 'vr' and pulse and parent not in first:
                 first[parent] = button_presses + 1
                 if len(first) == len(parents['vr']):
-                    return math.lcm(*first.values()) 
+                    return math.lcm(*first.values())
             if module not in types:
                 continue
 

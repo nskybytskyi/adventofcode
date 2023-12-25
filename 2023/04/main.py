@@ -7,25 +7,25 @@ def read_and_parse(filename: str) -> list[tuple[list[int], list[int]]]:
     with open(filename, "r", encoding="utf-8") as file:
         for line in file.read().splitlines():
             _, nums = line.split(": ")
-            win, my = nums.split(" | ")
-            win_nums = list(map(int, win.split()))
-            my_nums = list(map(int, my.split()))
+            win_chunk, my_chunk = nums.split(" | ")
+            win_nums = list(map(int, win_chunk.split()))
+            my_nums = list(map(int, my_chunk.split()))
             cards.append((win_nums, my_nums))
     return cards
 
 
-def solve_part_one(data: list[tuple[list[int], list[int]]]) -> int:
+def solve_part_one(cards: list[tuple[list[int], list[int]]]) -> int:
     score = 0
-    for win, my in data:
-        if matches := len(set(win) & set(my)):
+    for win_nums, my_nums in cards:
+        if matches := len(set(win_nums) & set(my_nums)):
             score += 1 << (matches - 1)
     return score
 
 
-def solve_part_two(data: list[tuple[list[int], list[int]]]) -> int:
-    copies = [1] * len(data)
-    for i, (win, my) in enumerate(data):
-        matches = len(set(win) & set(my))
+def solve_part_two(cards: list[tuple[list[int], list[int]]]) -> int:
+    copies = [1] * len(cards)
+    for i, (win_nums, my_nums) in enumerate(cards):
+        matches = len(set(win_nums) & set(my_nums))
         for j in range(i + 1, i + matches + 1):
             copies[j] += copies[i]
     return sum(copies)

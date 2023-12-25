@@ -16,16 +16,16 @@ def build_graphs(bricks: list[list[int]]) -> tuple[list[list[int]], list[set[int
     bricks.sort(key=operator.itemgetter(2))
     num_bricks = ground_id = len(bricks)
 
-    heightmap = collections.defaultdict(lambda: (0, ground_id))
+    heightmap = collections.defaultdict(lambda: (int(0), ground_id))
     children = [[] for _ in range(num_bricks + 1)]
     parents = [{ground_id} for _ in range(num_bricks)]
 
-    for brick_id, (x1, y1, z1, x2, y2, z2) in enumerate(bricks):
+    for brick_id, (mnx, mny, mnz, mxx, mxy, mxz) in enumerate(bricks):
         max_height = 0
-        surface = [(x, y) for x in range(x1, x2 + 1) for y in range(y1, y2 + 1)]
+        surface = [(x, y) for x in range(mnx, mxx + 1) for y in range(mny, mxy + 1)]
 
-        for x, y in surface:
-            height, parent_id = heightmap[x, y]
+        for x_coord, y_coord in surface:
+            height, parent_id = heightmap[x_coord, y_coord]
             if max_height < height:
                 max_height = height
                 parents[brick_id] = {parent_id}
@@ -35,8 +35,8 @@ def build_graphs(bricks: list[list[int]]) -> tuple[list[list[int]], list[set[int
         for parent_id in parents[brick_id]:
             children[parent_id].append(brick_id)
 
-        for x, y in surface:
-            heightmap[x, y] = max_height + z2 - z1 + 1, brick_id
+        for x_coord, y_coord in surface:
+            heightmap[x_coord, y_coord] = max_height + mxz - mnz + 1, brick_id
 
     return children, parents
 
@@ -76,10 +76,10 @@ def solve_part_two(bricks: list[list[int]]) -> int:
 
 
 def test():
-    a = read_and_parse("example.txt")
-    part_one_answer = solve_part_one(a)
+    bricks = read_and_parse("example.txt")
+    part_one_answer = solve_part_one(bricks)
     assert part_one_answer == 5
-    part_two_answer = solve_part_two(a)
+    part_two_answer = solve_part_two(bricks)
     assert part_two_answer == 7
 
 

@@ -5,8 +5,8 @@ import functools
 import re
 
 
-def custom_hash(s: str) -> int:
-    return functools.reduce(lambda acc, c: 17 * (acc + ord(c)) % 256, s, 0)
+def custom_hash(seq: str) -> int:
+    return functools.reduce(lambda acc, val: 17 * (acc + ord(val)) % 256, seq, 0)
 
 
 def read_and_parse(filename: str) -> list[str]:
@@ -25,12 +25,12 @@ def solve_part_two(instructions: list[str]) -> int:
     assign = re.compile("([a-z]+)=([0-9])")
 
     for instruction in instructions:
-        if (m := remove.match(instruction)) is not None:
-            label = m[1]
+        if (match_ := remove.match(instruction)) is not None:
+            label = match_[1]
             box = boxes[custom_hash(label)]
             box.pop(label, None)
-        elif (m := assign.match(instruction)) is not None:
-            label, focal_length = m.groups()
+        elif (match_ := assign.match(instruction)) is not None:
+            label, focal_length = match_.groups()
             box = boxes[custom_hash(label)]
             box[label] = int(focal_length)
         else:
