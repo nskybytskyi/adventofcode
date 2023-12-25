@@ -10,15 +10,16 @@ def read_and_parse(filename: str) -> list[str]:
         return file.read().splitlines()
 
 
-def solve_part_one(grid) -> int:
-    rows, cols = len(grid), len(grid[0])
+def solve_part_one(hiking_trails) -> int:
+    rows, cols = len(hiking_trails), len(hiking_trails[0])
     seen = {(int(0), int(1))}
 
     def nei(row: int, col: int):
-        if grid[row][col] == '.':
-            return [(row - 1, col), (row, col - 1), (row, col + 1), (row + 1, col)]
-        return {'^': [(row - 1, col)], '<': [(row, col - 1)],
-                '>': [(row, col + 1)], 'v': [(row + 1, col)]}[grid[row][col]]
+        mapping = {'.': [(row - 1, col), (row, col - 1),
+                         (row, col + 1), (row + 1, col)],
+                   '^': [(row - 1, col)], '<': [(row, col - 1)],
+                   '>': [(row, col + 1)], 'v': [(row + 1, col)]}
+        return mapping[hiking_trails[row][col]]
 
     longest_path = 0
 
@@ -31,7 +32,7 @@ def solve_part_one(grid) -> int:
             if (
                 0 <= next_row < rows and
                 0 <= next_col < cols and
-                grid[next_row][next_col] != '#' and
+                hiking_trails[next_row][next_col] != '#' and
                 (next_row, next_col) not in seen
             ):
                 seen.add((next_row, next_col))
@@ -42,39 +43,39 @@ def solve_part_one(grid) -> int:
     return longest_path - 1
 
 
-def get_neighbors(grid, row: int, col: int):
+def get_neighbors(hiking_trails, row: int, col: int):
     nei = [(row - 1, col), (row, col - 1), (row, col + 1), (row + 1, col)]
     for next_row, next_col in nei:
         if (
-            0 <= next_row < len(grid) and
-            0 <= next_col < len(grid[0]) and
-            grid[next_row][next_col] != '#'
+            0 <= next_row < len(hiking_trails) and
+            0 <= next_col < len(hiking_trails[0]) and
+            hiking_trails[next_row][next_col] != '#'
         ):
             yield next_row, next_col
 
 
-def build_graph(grid: list[str]):
-    rows, cols = len(grid), len(grid[0])
+def build_graph(hiking_trails: list[str]):
+    rows, cols = len(hiking_trails), len(hiking_trails[0])
     graph = collections.defaultdict(list)
 
     for row in range(rows):
         for col in range(cols):
-            if grid[row][col] == '#':
+            if hiking_trails[row][col] == '#':
                 continue
-            for next_row, next_col in get_neighbors(grid, row, col):
+            for next_row, next_col in get_neighbors(hiking_trails, row, col):
                 graph[row, col].append((next_row, next_col))
 
     return graph
 
 
-def condense_graph(special, grid):
+def condense_graph(special, hiking_trails):
     condensed_graph = collections.defaultdict(list)
     for special_row, special_col in special:
         distance = {(special_row, special_col): 0}
         queue = collections.deque([(special_row, special_col)])
         while queue:
             row, col = queue.popleft()
-            for next_row, next_col in get_neighbors(grid, row, col):
+            for next_row, next_col in get_neighbors(hiking_trails, row, col):
                 if (next_row, next_col) in distance:
                     continue
                 if (next_row, next_col) in special:
@@ -86,16 +87,16 @@ def condense_graph(special, grid):
     return condensed_graph
 
 
-def solve_part_two(grid) -> int:
-    rows, cols = len(grid), len(grid[0])
+def solve_part_two(hiking_trails) -> int:
+    rows, cols = len(hiking_trails), len(hiking_trails[0])
 
-    graph = build_graph(grid)
+    graph = build_graph(hiking_trails)
     special = {(0, 1), (rows - 1, cols - 2)}
     for row in range(rows):
         for col in range(cols):
             if len(graph[row, col]) > 2:
                 special.add((row, col))
-    condensed_graph = condense_graph(special, grid)
+    condensed_graph = condense_graph(special, hiking_trails)
 
     longest_path = 0
     seen = {(0, 1)}
@@ -120,18 +121,18 @@ def solve_part_two(grid) -> int:
 
 
 def test():
-    grid = read_and_parse("example.txt")
-    part_one_answer = solve_part_one(grid)
+    hiking_trails = read_and_parse("example.txt")
+    part_one_answer = solve_part_one(hiking_trails)
     assert part_one_answer == 94
-    part_two_answer = solve_part_two(grid)
+    part_two_answer = solve_part_two(hiking_trails)
     assert part_two_answer == 154
 
 
 def main():
-    grid = read_and_parse("input.txt")
-    part_one_answer = solve_part_one(grid)
+    hiking_trails = read_and_parse("input.txt")
+    part_one_answer = solve_part_one(hiking_trails)
     print(f"Part One: {part_one_answer}")
-    part_two_answer = solve_part_two(grid)
+    part_two_answer = solve_part_two(hiking_trails)
     print(f"Part Two: {part_two_answer}")
 
 

@@ -77,16 +77,14 @@ def read_and_parse(filename: str) -> tuple[list[int], list[list[MappingRange]]]:
         return seeds, maps
 
 
-def solve_part_one(data: tuple[list[int], list[list[MappingRange]]]) -> int:
-    values, maps_raw = data
+def solve_part_one(values: list[int], maps_raw: list[list[MappingRange]]) -> int:
     for map_raw in maps_raw:
         map_ = PiecewiseLinearMapping(map_raw)
         values = [map_.apply_to_point(value) for value in values]
     return min(values)
 
 
-def solve_part_two(data: tuple[list[int], list[list[MappingRange]]]) -> int:
-    seeds, maps_raw = data
+def solve_part_two(seeds: list[int], maps_raw: list[list[MappingRange]]) -> int:
     ranges = [
         ValueRange(seeds[2 * i], seeds[2 * i + 1]) for i in range(len(seeds) >> 1)
     ]
@@ -103,18 +101,18 @@ def solve_part_two(data: tuple[list[int], list[list[MappingRange]]]) -> int:
 
 
 def test():
-    data = read_and_parse("example.txt")
-    part_one_answer = solve_part_one(data)
+    values, maps_raw = read_and_parse("example.txt")
+    part_one_answer = solve_part_one(values, maps_raw)
     assert part_one_answer == 35
-    part_two_answer = solve_part_two(data)
+    part_two_answer = solve_part_two(values, maps_raw)
     assert part_two_answer == 46
 
 
 def main():
-    data = read_and_parse("input.txt")
-    part_one_answer = solve_part_one(data)
+    seeds, maps_raw = read_and_parse("input.txt")
+    part_one_answer = solve_part_one(seeds, maps_raw)
     print(f"Part One: {part_one_answer}")
-    part_two_answer = solve_part_two(data)
+    part_two_answer = solve_part_two(seeds, maps_raw)
     print(f"Part Two: {part_two_answer}")
 
 

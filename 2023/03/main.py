@@ -14,8 +14,8 @@ Symbol = collections.namedtuple("Symbol", ["row", "column"])
 Gear = collections.namedtuple("Gear", ["row", "column", "ratio"])
 
 
-def numbers(grid: list[str]) -> tp.Iterable[Number]:
-    for row_index, row in enumerate(grid):
+def numbers(nums_grid: list[str]) -> tp.Iterable[Number]:
+    for row_index, row in enumerate(nums_grid):
         start = None
 
         for col_index, val in enumerate(row):
@@ -31,37 +31,37 @@ def numbers(grid: list[str]) -> tp.Iterable[Number]:
             yield Number(row_index, start, len(row), int(value))
 
 
-def adjacent(grid: list[str], number: Number) -> tp.Iterable[Symbol]:
+def adjacent(nums_grid: list[str], number: Number) -> tp.Iterable[Symbol]:
     for row in (number.row - 1, number.row, number.row + 1):
         for col in range(number.start - 1, number.end + 1):
             if (
-                0 <= row < len(grid)
-                and 0 <= col < len(grid[row])
-                and grid[row][col] != "."
-                and not grid[row][col].isdigit()
+                0 <= row < len(nums_grid)
+                and 0 <= col < len(nums_grid[row])
+                and nums_grid[row][col] != "."
+                and not nums_grid[row][col].isdigit()
             ):
                 yield Symbol(row, col)
 
 
-def part_numbers(grid: list[str]) -> tp.Iterable[Number]:
-    for number in numbers(grid):
-        if any(adjacent(grid, number)):
+def part_numbers(nums_grid: list[str]) -> tp.Iterable[Number]:
+    for number in numbers(nums_grid):
+        if any(adjacent(nums_grid, number)):
             yield number
 
 
-def symbols(grid: list[str]) -> tp.Iterable[Symbol]:
-    for row_index, row in enumerate(grid):
+def symbols(nums_grid: list[str]) -> tp.Iterable[Symbol]:
+    for row_index, row in enumerate(nums_grid):
         for col_index, val in enumerate(row):
             if val != "." and not val.isdigit():
                 yield Symbol(row_index, col_index)
 
 
-def gears(grid: list[str]) -> tp.Iterable[Gear]:
+def gears(nums_grid: list[str]) -> tp.Iterable[Gear]:
     counter = collections.Counter()
     ratios = collections.defaultdict(list)
 
-    for number in numbers(grid):
-        for symbol in adjacent(grid, number):
+    for number in numbers(nums_grid):
+        for symbol in adjacent(nums_grid, number):
             counter[symbol] += 1
             ratios[symbol].append(number.value)
 
@@ -71,27 +71,27 @@ def gears(grid: list[str]) -> tp.Iterable[Gear]:
             yield Gear(symbol.row, symbol.column, ratio)
 
 
-def solve_part_one(data: list[str]) -> int:
-    return sum(abs(part_number.value) for part_number in part_numbers(data))
+def solve_part_one(nums_grid: list[str]) -> int:
+    return sum(abs(part_number.value) for part_number in part_numbers(nums_grid))
 
 
-def solve_part_two(data: list[str]) -> int:
-    return sum(gear.ratio for gear in gears(data))
+def solve_part_two(nums_grid: list[str]) -> int:
+    return sum(gear.ratio for gear in gears(nums_grid))
 
 
 def test():
-    data = read_and_parse("example.txt")
-    part_one_answer = solve_part_one(data)
+    nums_grid = read_and_parse("example.txt")
+    part_one_answer = solve_part_one(nums_grid)
     assert part_one_answer == 4361
-    part_two_answer = solve_part_two(data)
+    part_two_answer = solve_part_two(nums_grid)
     assert part_two_answer == 467_835
 
 
 def main():
-    data = read_and_parse("input.txt")
-    part_one_answer = solve_part_one(data)
+    nums_grid = read_and_parse("input.txt")
+    part_one_answer = solve_part_one(nums_grid)
     print(f"Part One: {part_one_answer}")
-    part_two_answer = solve_part_two(data)
+    part_two_answer = solve_part_two(nums_grid)
     print(f"Part Two: {part_two_answer}")
 
 

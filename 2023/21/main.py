@@ -8,12 +8,12 @@ def read_and_parse(filename: str) -> list[str]:
         return file.read().splitlines()
 
 
-def solve_part_one(grid: list[str], steps: int = 64) -> int:
-    rows, cols = len(grid), len(grid[0])
+def solve_part_one(garden: list[str], steps: int = 64) -> int:
+    rows, cols = len(garden), len(garden[0])
     start_row = start_col = -1
     for row in range(rows):
         for col in range(cols):
-            if grid[row][col] == 'S':
+            if garden[row][col] == 'S':
                 start_row, start_col = row, col
     queue = [{(start_row, start_col)}]
     for i in range(steps):
@@ -24,18 +24,18 @@ def solve_part_one(grid: list[str], steps: int = 64) -> int:
                 if (
                     0 <= next_row < rows and
                     0 <= next_col < cols and
-                    grid[next_row][next_col] != '#'
+                    garden[next_row][next_col] != '#'
                 ):
                     queue[i + 1].add((next_row, next_col))
     return len(queue[steps])
 
 
-def solve_part_two_naive(grid: list[str], steps: int) -> int:
-    rows, cols = len(grid), len(grid[0])
+def solve_part_two_naive(garden: list[str], steps: int) -> int:
+    rows, cols = len(garden), len(garden[0])
     start_row = start_col = -1
     for row in range(rows):
         for col in range(cols):
-            if grid[row][col] == 'S':
+            if garden[row][col] == 'S':
                 start_row, start_col = row, col
     seen = {(start_row, start_col)}
     total = 0
@@ -48,7 +48,7 @@ def solve_part_two_naive(grid: list[str], steps: int) -> int:
             nei = (row-1,col),(row,col-1),(row,col+1),(row+1,col)
             for next_row, next_col in nei:
                 if (
-                    grid[next_row % rows][next_col % cols] != '#' and
+                    garden[next_row % rows][next_col % cols] != '#' and
                     (next_row, next_col) not in seen
                 ):
                     seen.add((next_row, next_col))
@@ -56,7 +56,7 @@ def solve_part_two_naive(grid: list[str], steps: int) -> int:
     return total + len(queue)
 
 
-def bfs(grid, start, key):
+def bfs(garden, start, key):
     queue = collections.deque([start])
     distance = {key(start): 0}
 
@@ -67,7 +67,7 @@ def bfs(grid, start, key):
 
         nei = (row - 1, col), (row, col - 1), (row, col + 1), (row + 1, col)
         for next_row, next_col in nei:
-            if grid[next_row % len(grid)][next_col % len(grid)] == '#':
+            if garden[next_row % len(garden)][next_col % len(garden)] == '#':
                 continue
 
             new_state = next_row, next_col, 1 - parity
@@ -94,8 +94,8 @@ def count_reachable(distances, steps, size):
     return total
 
 
-def solve_part_two(grid: list[str], steps: int = 26_501_365) -> int:
-    size = len(grid)
+def solve_part_two(garden: list[str], steps: int = 26_501_365) -> int:
+    size = len(garden)
     midpoint = size >> 1
 
     def key(state):
@@ -103,48 +103,48 @@ def solve_part_two(grid: list[str], steps: int = 26_501_365) -> int:
         return row % size, col % size, parity, row >= midpoint, col >= midpoint
 
     start = midpoint, midpoint, 0
-    distance = bfs(grid, start, key)
+    distance = bfs(garden, start, key)
     return count_reachable(distance, steps, size)
 
 
 def test():
-    data = read_and_parse("example.txt")
-    part_one_answer = solve_part_one(data, 6)
+    garden = read_and_parse("example.txt")
+    part_one_answer = solve_part_one(garden, 6)
     assert part_one_answer == 16
 
-    part_one_answer = solve_part_two_naive(data, 6)
+    part_one_answer = solve_part_two_naive(garden, 6)
     assert part_one_answer == 16
-    part_two_answer = solve_part_two_naive(data, 10)
+    part_two_answer = solve_part_two_naive(garden, 10)
     assert part_two_answer == 50
-    part_two_answer = solve_part_two_naive(data, 50)
+    part_two_answer = solve_part_two_naive(garden, 50)
     assert part_two_answer == 1_594
-    part_two_answer = solve_part_two_naive(data, 100)
+    part_two_answer = solve_part_two_naive(garden, 100)
     assert part_two_answer == 6_536
-    part_two_answer = solve_part_two_naive(data, 500)
+    part_two_answer = solve_part_two_naive(garden, 500)
     assert part_two_answer == 167_004
-    # part_two_answer = solve_part_two_naive(data, 1000)
+    # part_two_answer = solve_part_two_naive(garden, 1000)
     # assert part_two_answer == 668_697
-    # part_two_answer = solve_part_two_naive(data, 5000)
+    # part_two_answer = solve_part_two_naive(garden, 5000)
     # assert part_two_answer == 16_733_044
 
-    data = read_and_parse("input.txt")
-    part_two_answer = solve_part_two(data, 10)
+    garden = read_and_parse("input.txt")
+    part_two_answer = solve_part_two(garden, 10)
     assert part_two_answer == 103
-    part_two_answer = solve_part_two(data, 50)
+    part_two_answer = solve_part_two(garden, 50)
     assert part_two_answer == 2_272
-    part_two_answer = solve_part_two(data, 100)
+    part_two_answer = solve_part_two(garden, 100)
     assert part_two_answer == 9_102
-    part_two_answer = solve_part_two(data, 500)
+    part_two_answer = solve_part_two(garden, 500)
     assert part_two_answer == 223_017
-    part_two_answer = solve_part_two(data, 1000)
+    part_two_answer = solve_part_two(garden, 1000)
     assert part_two_answer == 890_178
 
 
 def main():
-    data = read_and_parse("input.txt")
-    part_one_answer = solve_part_one(data)
+    garden = read_and_parse("input.txt")
+    part_one_answer = solve_part_one(garden)
     print(f"Part One: {part_one_answer}")
-    part_two_answer = solve_part_two(data)
+    part_two_answer = solve_part_two(garden)
     print(f"Part Two: {part_two_answer}")
 
 

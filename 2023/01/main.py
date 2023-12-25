@@ -30,29 +30,29 @@ def recover_part_two(line: str) -> int:
     return 10 * value(first_word) + value(last_word)
 
 
-def solve_part_one(data):
-    return sum(map(recover_part_one, data))
+def solve_part_one(lines: list[str]) -> int:
+    return sum(map(recover_part_one, lines))
 
 
-def solve_part_two(data):
-    return sum(map(recover_part_two, data))
+def solve_part_two(lines: list[str]) -> int:
+    return sum(map(recover_part_two, lines))
 
 
 def test():
-    data = read_and_parse("example-1.txt")
-    part_one_answer = solve_part_one(data)
+    lines = read_and_parse("example-1.txt")
+    part_one_answer = solve_part_one(lines)
     assert part_one_answer == 142
 
-    data = read_and_parse("example-2.txt")
-    part_two_answer = solve_part_two(data)
+    lines = read_and_parse("example-2.txt")
+    part_two_answer = solve_part_two(lines)
     assert part_two_answer == 281
 
 
 def main():
-    data = read_and_parse("input.txt")
-    part_one_answer = solve_part_one(data)
+    lines = read_and_parse("input.txt")
+    part_one_answer = solve_part_one(lines)
     print(f"Part One: {part_one_answer}")
-    part_two_answer = solve_part_two(data)
+    part_two_answer = solve_part_two(lines)
     print(f"Part Two: {part_two_answer}")
 
 

@@ -29,32 +29,32 @@ def read_and_parse(filename: str) -> list[Game]:
     return games
 
 
-def solve_part_one(data: list[Game]) -> int:
+def solve_part_one(games: list[Game]) -> int:
     limit = collections.Counter({"red": 12, "green": 13, "blue": 14})
     return sum(
         game_id
-        for game_id, game in enumerate(data, start=1)
+        for game_id, game in enumerate(games, start=1)
         if minimal_bag(game) <= limit
     )
 
 
-def solve_part_two(data: list[Game]) -> int:
-    return sum(math.prod(minimal_bag(game).values()) for game in data)
+def solve_part_two(games: list[Game]) -> int:
+    return sum(math.prod(minimal_bag(game).values()) for game in games)
 
 
 def test():
-    data = read_and_parse("example.txt")
-    part_one_answer = solve_part_one(data)
+    games = read_and_parse("example.txt")
+    part_one_answer = solve_part_one(games)
     assert part_one_answer == 8
-    part_two_answer = solve_part_two(data)
+    part_two_answer = solve_part_two(games)
     assert part_two_answer == 2_286
 
 
 def main():
-    data = read_and_parse("input.txt")
-    part_one_answer = solve_part_one(data)
+    games = read_and_parse("input.txt")
+    part_one_answer = solve_part_one(games)
     print(f"Part One: {part_one_answer}")
-    part_two_answer = solve_part_two(data)
+    part_two_answer = solve_part_two(games)
     print(f"Part Two: {part_two_answer}")
 
 

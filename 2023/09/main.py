@@ -13,27 +13,27 @@ def predict(nums: list[int]) -> int:
     return nums[-1] + (predict(diff) if any(diff) else 0)
 
 
-def solve_part_one(data: list[list[int]]) -> int:
-    return sum(predict(row) for row in data)
+def solve_part_one(records: list[list[int]]) -> int:
+    return sum(map(predict, records))
 
 
-def solve_part_two(data: list[list[int]]) -> int:
-    return sum(predict(row[::-1]) for row in data)
+def solve_part_two(records: list[list[int]]) -> int:
+    return sum(predict(record[::-1]) for record in records)
 
 
 def test():
-    data = read_and_parse("example.txt")
-    part_one_answer = solve_part_one(data)
+    records = read_and_parse("example.txt")
+    part_one_answer = solve_part_one(records)
     assert part_one_answer == 114
-    part_two_answer = solve_part_two(data)
+    part_two_answer = solve_part_two(records)
     assert part_two_answer == 2
 
 
 def main():
-    data = read_and_parse("input.txt")
-    part_one_answer = solve_part_one(data)
+    records = read_and_parse("input.txt")
+    part_one_answer = solve_part_one(records)
     print(f"Part One: {part_one_answer}")
-    part_two_answer = solve_part_two(data)
+    part_two_answer = solve_part_two(records)
     print(f"Part Two: {part_two_answer}")
 
 

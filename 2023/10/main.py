@@ -31,16 +31,16 @@ def find_s(grid):
     assert False
 
 
-def solve_part_one(data: list[str]) -> int:
-    rows, cols = len(data), len(data[0])
-    start_row, start_col = find_s(data)
+def solve_part_one(pipe_grid: list[str]) -> int:
+    rows, cols = len(pipe_grid), len(pipe_grid[0])
+    start_row, start_col = find_s(pipe_grid)
     queue = collections.deque([(start_row, start_col)])
     dist = [[-1] * cols for _ in range(rows)]
     dist[start_row][start_col] = 0
 
     while queue:
         row, col = queue.popleft()
-        for next_row, next_col in nei(data, row, col):
+        for next_row, next_col in nei(pipe_grid, row, col):
             if 0 <= next_row < rows and 0 <= next_col < cols and dist[next_row][next_col] == -1:
                 queue.append((next_row, next_col))
                 dist[next_row][next_col] = dist[row][col] + 1
@@ -56,14 +56,14 @@ def area(fig: list[tuple[int, int]]) -> float:
     return abs(res / 2)
 
 
-def solve_part_two(data: list[str]) -> float:
-    rows, cols = len(data), len(data[0])
-    start_row, start_col = find_s(data)
+def solve_part_two(pipe_grid: list[str]) -> float:
+    rows, cols = len(pipe_grid), len(pipe_grid[0])
+    start_row, start_col = find_s(pipe_grid)
     path = [(start_row, start_col)]
 
     while len(path) == 1 or path[-1] != path[0]:
         row, col = path[-1]
-        for next_row, next_col in nei(data, row, col):
+        for next_row, next_col in nei(pipe_grid, row, col):
             if (
                 0 <= next_row < rows
                 and 0 <= next_col < cols
@@ -73,43 +73,43 @@ def solve_part_two(data: list[str]) -> float:
                 break
 
     bound = len(path) - 1
-    path = [(r, c) for r, c in path if data[r][c] not in "-|"]
+    path = [(r, c) for r, c in path if pipe_grid[r][c] not in "-|"]
     return area(path) + 1 - bound / 2
 
 
 def test():
-    data = read_and_parse("example-1.txt")
-    part_one_answer = solve_part_one(data)
+    pipe_grid = read_and_parse("example-1.txt")
+    part_one_answer = solve_part_one(pipe_grid)
     assert part_one_answer == 4
-    part_two_answer = solve_part_two(data)
+    part_two_answer = solve_part_two(pipe_grid)
     assert part_two_answer == 1
 
-    data = read_and_parse("example-3.txt")
-    part_two_answer = solve_part_two(data)
+    pipe_grid = read_and_parse("example-3.txt")
+    part_two_answer = solve_part_two(pipe_grid)
     assert part_two_answer == 4
 
-    data = read_and_parse("example-3.txt")
-    part_two_answer = solve_part_two(data)
+    pipe_grid = read_and_parse("example-3.txt")
+    part_two_answer = solve_part_two(pipe_grid)
     assert part_two_answer == 4
 
-    data = read_and_parse("example-4.txt")
-    part_two_answer = solve_part_two(data)
+    pipe_grid = read_and_parse("example-4.txt")
+    part_two_answer = solve_part_two(pipe_grid)
     assert part_two_answer == 4
 
-    data = read_and_parse("example-5.txt")
-    part_two_answer = solve_part_two(data)
+    pipe_grid = read_and_parse("example-5.txt")
+    part_two_answer = solve_part_two(pipe_grid)
     assert part_two_answer == 8
 
-    data = read_and_parse("example-6.txt")
-    part_two_answer = solve_part_two(data)
+    pipe_grid = read_and_parse("example-6.txt")
+    part_two_answer = solve_part_two(pipe_grid)
     assert part_two_answer == 10
 
 
 def main():
-    data = read_and_parse("input.txt")
-    part_one_answer = solve_part_one(data)
+    pipe_grid = read_and_parse("input.txt")
+    part_one_answer = solve_part_one(pipe_grid)
     print(f"Part One: {part_one_answer}")
-    part_two_answer = solve_part_two(data)
+    part_two_answer = solve_part_two(pipe_grid)
     print(f"Part Two: {part_two_answer}")
 
 

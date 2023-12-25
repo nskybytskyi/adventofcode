@@ -2,7 +2,6 @@
 """Clumsy Crucible"""
 import collections
 import heapq
-import math
 
 
 def read_and_parse(filename: str) -> list[list[int]]:
@@ -11,7 +10,7 @@ def read_and_parse(filename: str) -> list[list[int]]:
 
 
 def dijkstra(sources, get_neighbors):
-    distance = collections.defaultdict(lambda: math.inf)
+    distance = collections.defaultdict(lambda: 10**9)
     heap = []
 
     for source in sources:
@@ -31,8 +30,8 @@ def dijkstra(sources, get_neighbors):
     return distance
 
 
-def solve_part_one(grid: list[list[int]]) -> int:
-    rows, cols = len(grid), len(grid[0])
+def solve_part_one(heatloss: list[list[int]]) -> int:
+    rows, cols = len(heatloss), len(heatloss[0])
 
     def get_neighbors(node):
         row, col, dir_row, dir_col, cnt = node
@@ -41,13 +40,13 @@ def solve_part_one(grid: list[list[int]]) -> int:
             next_row, next_col = row + dir_row, col + dir_col
             next_node = next_row, next_col, dir_row, dir_col, cnt + 1
             if 0 <= next_row < rows and 0 <= next_col < cols:
-                yield next_node, grid[next_row][next_col]
+                yield next_node, heatloss[next_row][next_col]
 
         for next_dir_row, next_dir_col in (dir_col, -dir_row), (-dir_col, dir_row):
             next_row, next_col = row + next_dir_row, col + next_dir_col
             next_node = next_row, next_col, next_dir_row, next_dir_col, 1
             if 0 <= next_row < rows and 0 <= next_col < cols:
-                yield next_node, grid[next_row][next_col]
+                yield next_node, heatloss[next_row][next_col]
 
     distance = dijkstra(((0, 0, 0, 1, 0), (0, 0, 1, 0, 0)), get_neighbors)
 
@@ -58,8 +57,8 @@ def solve_part_one(grid: list[list[int]]) -> int:
     )
 
 
-def solve_part_two(grid: list[list[int]]) -> int:
-    rows, cols = len(grid), len(grid[0])
+def solve_part_two(heatloss: list[list[int]]) -> int:
+    rows, cols = len(heatloss), len(heatloss[0])
 
     def get_neighbors(node):
         row, col, dir_row, dir_col, cnt = node
@@ -68,14 +67,14 @@ def solve_part_two(grid: list[list[int]]) -> int:
             next_row, next_col = row + dir_row, col + dir_col
             next_node = next_row, next_col, dir_row, dir_col, cnt + 1
             if 0 <= next_row < rows and 0 <= next_col < cols:
-                yield next_node, grid[next_row][next_col]
+                yield next_node, heatloss[next_row][next_col]
 
         if cnt >= 4:
             for next_dir_row, next_dir_col in (dir_col, -dir_row), (-dir_col, dir_row):
                 next_row, next_col = row + next_dir_row, col + next_dir_col
                 next_node = next_row, next_col, next_dir_row, next_dir_col, 1
                 if 0 <= next_row < rows and 0 <= next_col < cols:
-                    yield next_node, grid[next_row][next_col]
+                    yield next_node, heatloss[next_row][next_col]
 
     distance = dijkstra(((0, 0, 0, 1, 0), (0, 0, 1, 0, 0)), get_neighbors)
 
@@ -87,22 +86,22 @@ def solve_part_two(grid: list[list[int]]) -> int:
 
 
 def test():
-    grid = read_and_parse("example-1.txt")
-    part_one_answer = solve_part_one(grid)
+    heatloss = read_and_parse("example-1.txt")
+    part_one_answer = solve_part_one(heatloss)
     assert part_one_answer == 102
-    part_two_answer = solve_part_two(grid)
+    part_two_answer = solve_part_two(heatloss)
     assert part_two_answer == 94
 
-    grid = read_and_parse("example-2.txt")
-    part_two_answer = solve_part_two(grid)
+    heatloss = read_and_parse("example-2.txt")
+    part_two_answer = solve_part_two(heatloss)
     assert part_two_answer == 71
 
 
 def main():
-    grid = read_and_parse("input.txt")
-    part_one_answer = solve_part_one(grid)
+    heatloss = read_and_parse("input.txt")
+    part_one_answer = solve_part_one(heatloss)
     print(f"Part One: {part_one_answer}")
-    part_two_answer = solve_part_two(grid)
+    part_two_answer = solve_part_two(heatloss)
     print(f"Part Two: {part_two_answer}")
 
 

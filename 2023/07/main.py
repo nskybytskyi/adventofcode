@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Camel Cards"""
+"""Camel cards"""
 import collections
 
 
@@ -34,29 +34,29 @@ def score(ordered_games: list[tuple[str, int]]) -> int:
     return sum(rank * bid for rank, (_, bid) in enumerate(ordered_games, start=1))
 
 
-def solve_part_one(data: list[tuple[str, int]]) -> int:
-    data.sort(key=lambda pair: part1_key(pair[0]))
-    return score(data)
+def solve_part_one(camel_cards: list[tuple[str, int]]) -> int:
+    camel_cards.sort(key=lambda pair: part1_key(pair[0]))
+    return score(camel_cards)
 
 
-def solve_part_two(data: list[tuple[str, int]]) -> int:
-    data.sort(key=lambda pair: part2_key(pair[0]))
-    return score(data)
+def solve_part_two(camel_cards: list[tuple[str, int]]) -> int:
+    camel_cards.sort(key=lambda pair: part2_key(pair[0]))
+    return score(camel_cards)
 
 
 def test():
-    data = read_and_parse("example.txt")
-    part_one_answer = solve_part_one(data)
+    camel_cards = read_and_parse("example.txt")
+    part_one_answer = solve_part_one(camel_cards)
     assert part_one_answer == 6_440
-    part_two_answer = solve_part_two(data)
+    part_two_answer = solve_part_two(camel_cards)
     assert part_two_answer == 5_905
 
 
 def main():
-    data = read_and_parse("input.txt")
-    part_one_answer = solve_part_one(data)
+    camel_cards = read_and_parse("input.txt")
+    part_one_answer = solve_part_one(camel_cards)
     print(f"Part One: {part_one_answer}")
-    part_two_answer = solve_part_two(data)
+    part_two_answer = solve_part_two(camel_cards)
     print(f"Part Two: {part_two_answer}")
 
 

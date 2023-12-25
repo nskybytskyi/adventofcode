@@ -53,29 +53,29 @@ def dynamic_programming(records: str, nums: list[int]) -> int:
     return num_ways(0, 0, 0, ".")
 
 
-def solve_part_one(data: list[tuple[str, list[int]]]) -> int:
+def solve_part_one(springs: list[tuple[str, list[int]]]) -> int:
     """count arrangements that fit the description"""
-    return sum(brute_force(s, nums) for s, nums in data)
+    return sum(brute_force(s, nums) for s, nums in springs)
 
 
-def solve_part_two(data: list[tuple[str, list[int]]]) -> int:
+def solve_part_two(springs: list[tuple[str, list[int]]]) -> int:
     """unfolded records"""
-    return sum(dynamic_programming("?".join(5 * [s]), 5 * nums) for s, nums in data)
+    return sum(dynamic_programming("?".join(5 * [s]), 5 * nums) for s, nums in springs)
 
 
 def test():
-    data = read_and_parse("example.txt")
-    part_one_answer = solve_part_one(data)
+    springs = read_and_parse("example.txt")
+    part_one_answer = solve_part_one(springs)
     assert part_one_answer == 21
-    part_two_answer = solve_part_two(data)
+    part_two_answer = solve_part_two(springs)
     assert part_two_answer == 525_152
 
 
 def main():
-    data = read_and_parse("input.txt")
-    part_one_answer = solve_part_one(data)
+    springs = read_and_parse("input.txt")
+    part_one_answer = solve_part_one(springs)
     print(f"Part One: {part_one_answer}")
-    part_two_answer = solve_part_two(data)
+    part_two_answer = solve_part_two(springs)
     print(f"Part Two: {part_two_answer}")
 
 

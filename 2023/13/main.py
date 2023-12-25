@@ -37,29 +37,29 @@ def find_reflection(grid: list[str], smudge: int) -> int:
     assert False
 
 
-def solve_part_one(data: list[list[str]]) -> int:
+def solve_part_one(mirrors: list[list[str]]) -> int:
     """summary of notes without smudges"""
-    return sum(find_reflection(grid, 0) for grid in data)
+    return sum(find_reflection(grid, 0) for grid in mirrors)
 
 
-def solve_part_two(data: list[list[str]]) -> int:
+def solve_part_two(mirrors: list[list[str]]) -> int:
     """summary of notes with smudges"""
-    return sum(find_reflection(grid, 1) for grid in data)
+    return sum(find_reflection(grid, 1) for grid in mirrors)
 
 
 def test():
-    data = read_and_parse("example.txt")
-    part_one_answer = solve_part_one(data)
+    mirrors = read_and_parse("example.txt")
+    part_one_answer = solve_part_one(mirrors)
     assert part_one_answer == 405
-    part_two_answer = solve_part_two(data)
+    part_two_answer = solve_part_two(mirrors)
     assert part_two_answer == 400
 
 
 def main():
-    data = read_and_parse("input.txt")
-    part_one_answer = solve_part_one(data)
+    mirrors = read_and_parse("input.txt")
+    part_one_answer = solve_part_one(mirrors)
     print(f"Part One: {part_one_answer}")
-    part_two_answer = solve_part_two(data)
+    part_two_answer = solve_part_two(mirrors)
     print(f"Part Two: {part_two_answer}")
 
 

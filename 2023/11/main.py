@@ -29,32 +29,32 @@ def row_distance_sum(rows: list[int]) -> int:
     return distance_sum
 
 
-def solve_part_one(data: list[str]) -> int:
-    return solve_part_two(data, 2)
+def solve_part_one(universe: list[str]) -> int:
+    return solve_part_two(universe, 2)
 
 
-def solve_part_two(data: list[str], expansion_factor: int) -> int:
-    row_sum = row_distance_sum(find_rows(data, expansion_factor))
-    transpose = ["".join(column) for column in zip(*data)]
+def solve_part_two(universe: list[str], expansion_factor: int) -> int:
+    row_sum = row_distance_sum(find_rows(universe, expansion_factor))
+    transpose = ["".join(column) for column in zip(*universe)]
     column_sum = row_distance_sum(find_rows(transpose, expansion_factor))
     return row_sum + column_sum
 
 
 def test():
-    data = read_and_parse("example.txt")
-    part_one_answer = solve_part_one(data)
+    universe = read_and_parse("example.txt")
+    part_one_answer = solve_part_one(universe)
     assert part_one_answer == 374
-    part_two_answer = solve_part_two(data, 10)
+    part_two_answer = solve_part_two(universe, 10)
     assert part_two_answer == 1_030
-    part_two_answer = solve_part_two(data, 100)
+    part_two_answer = solve_part_two(universe, 100)
     assert part_two_answer == 8_410
 
 
 def main():
-    data = read_and_parse("input.txt")
-    part_one_answer = solve_part_one(data)
+    universe = read_and_parse("input.txt")
+    part_one_answer = solve_part_one(universe)
     print(f"Part One: {part_one_answer}")
-    part_two_answer = solve_part_two(data, 1_000_000)
+    part_two_answer = solve_part_two(universe, 1_000_000)
     print(f"Part Two: {part_two_answer}")
 
 
