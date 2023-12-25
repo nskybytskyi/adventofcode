@@ -36,4 +36,9 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pytest
+        for i in {1..25}; do
+          counter=$(printf "%02d" "$i")
+          cd "2023/$counter"
+          pytest
+          cd "../.."
+        done
