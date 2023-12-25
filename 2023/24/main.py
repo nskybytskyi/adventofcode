@@ -38,10 +38,6 @@ def solve_part_one(rays: list[Ray], lower_bound: int, upper_bound: int) -> int:
                for fst_ray, snd_ray in itertools.combinations(rays, 2))
 
 
-def solve_part_two(_) -> int:
-    return 0  # TODO
-
-
 def test():
     rays = read_and_parse("example.txt")
     part_one_answer = solve_part_one(rays, 7, 27)
@@ -54,8 +50,8 @@ def main():
     rays = read_and_parse("input.txt")
     part_one_answer = solve_part_one(rays, 2 * 10**14, 4 * 10**14)
     print(f"Part One: {part_one_answer}")
-    part_two_answer = solve_part_two(rays)
-    print(f"Part Two: {part_two_answer}")
+    # part_two_answer = solve_part_two(rays)
+    # print(f"Part Two: {part_two_answer}")
 
 
 if __name__ == "__main__":

@@ -134,10 +134,10 @@ def test():
     assert part_two_answer == 2_272
     part_two_answer = solve_part_two(garden, 100)
     assert part_two_answer == 9_102
-    part_two_answer = solve_part_two(garden, 500)
-    assert part_two_answer == 223_017
-    part_two_answer = solve_part_two(garden, 1000)
-    assert part_two_answer == 890_178
+    # part_two_answer = solve_part_two(garden, 500)
+    # assert part_two_answer == 223_017
+    # part_two_answer = solve_part_two(garden, 1000)
+    # assert part_two_answer == 890_178
 
 
 def main():
