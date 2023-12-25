@@ -2,9 +2,7 @@
 
 A reflection on my experience with Advent of Code 2023 as a first-time participant. It offers my assessment of AoC as a DSA competition, as a community, and as a learning experience.
 
-> Competitively, I placed 51st on the global leaderboard with 1'065 points and 20 appearances. My best finishes were 2nd place on day 22 and 3rd place on day 7. I'm eyeing better numbers next year.
-
----
+Competitively, I placed 51st on the global leaderboard with 1'065 points and 20 appearances. My best finishes were 2nd place on day 22 and 3rd place on day 7. I'm eyeing better numbers next year.
 
 ## As a DSA competition: 3/10
 
@@ -25,3 +23,6 @@ A reflection on my experience with Advent of Code 2023 as a first-time participa
 - Conventional DSAs applicable in other competitions are relatively simple and do not exceed the scope of something like CodeForces Division 2. You will not learn much if you are already comfortable with this level. That said, ***most participants aren't***.
 - Competitive solutions to some puzzles leverage external libraries like sympy or networkx. It is good that puzzles provide ***exposure*** to technologies you may be using at work soon.
 - Overall, you can learn a lot from Advent of Code if you set your goals properly.
+
+<!-- AOC TILES BEGIN -->
+<!-- AOC TILES END -->

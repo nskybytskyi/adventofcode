@@ -1,6 +1,8 @@
 *.DS_Store
 .vscode/
 *input.txt
+/.aoc_tiles/**/*
+!/.aoc_tiles/tiles/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
