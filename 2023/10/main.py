@@ -18,7 +18,8 @@ def nei(grid, row, col):
             if (row, col) in nei(grid, nr, nc)
         ]
 
-    mapping = {'|': [0, 3], '-': [1, 2], 'L': [0, 2], 'J': [0, 1], '7': [1, 3], 'F': [2, 3]}
+    mapping = {'.': [], '|': [0, 3], '-': [1, 2],
+               'L': [0, 2], 'J': [0, 1], '7': [1, 3], 'F': [2, 3]}
     return [neighbors[idx] for idx in mapping[grid[row][col]]]
 
 

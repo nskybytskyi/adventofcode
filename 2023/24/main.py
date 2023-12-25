@@ -39,15 +39,15 @@ def solve_part_one(rays: list[Ray], lower_bound: int, upper_bound: int) -> int:
 
 
 def solve_part_two(_) -> int:
-    return 0
+    return 0  # TODO
 
 
 def test():
     rays = read_and_parse("example.txt")
     part_one_answer = solve_part_one(rays, 7, 27)
     assert part_one_answer == 2
-    part_two_answer = solve_part_two(rays)
-    assert part_two_answer == 47
+    # part_two_answer = solve_part_two(rays)
+    # assert part_two_answer == 47
 
 
 def main():

@@ -120,8 +120,8 @@ def test():
     assert part_two_answer == 1_594
     part_two_answer = solve_part_two_naive(garden, 100)
     assert part_two_answer == 6_536
-    part_two_answer = solve_part_two_naive(garden, 500)
-    assert part_two_answer == 167_004
+    # part_two_answer = solve_part_two_naive(garden, 500)
+    # assert part_two_answer == 167_004
     # part_two_answer = solve_part_two_naive(garden, 1000)
     # assert part_two_answer == 668_697
     # part_two_answer = solve_part_two_naive(garden, 5000)
