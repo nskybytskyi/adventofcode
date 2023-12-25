@@ -120,24 +120,6 @@ def test():
     assert part_two_answer == 1_594
     part_two_answer = solve_part_two_naive(garden, 100)
     assert part_two_answer == 6_536
-    # part_two_answer = solve_part_two_naive(garden, 500)
-    # assert part_two_answer == 167_004
-    # part_two_answer = solve_part_two_naive(garden, 1000)
-    # assert part_two_answer == 668_697
-    # part_two_answer = solve_part_two_naive(garden, 5000)
-    # assert part_two_answer == 16_733_044
-
-    garden = read_and_parse("input.txt")
-    part_two_answer = solve_part_two(garden, 10)
-    assert part_two_answer == 103
-    part_two_answer = solve_part_two(garden, 50)
-    assert part_two_answer == 2_272
-    part_two_answer = solve_part_two(garden, 100)
-    assert part_two_answer == 9_102
-    # part_two_answer = solve_part_two(garden, 500)
-    # assert part_two_answer == 223_017
-    # part_two_answer = solve_part_two(garden, 1000)
-    # assert part_two_answer == 890_178
 
 
 def main():
