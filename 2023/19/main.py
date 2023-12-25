@@ -27,19 +27,27 @@ def parse_rules(rules):
 def solve_part_one(rules, parts) -> int:
     mapping = parse_rules(rules)
 
+    def parse_part(raw: str) -> dict[str, int]:
+        return {chunk[0]: int(chunk[2:]) for chunk in raw[1:-1].split(',')}
+
+    def safe_eval(step: str, part: dict[str, int]) -> bool:
+        if step == 'True':
+            return True
+
+        if step[1] == '>':
+            return part[step[0]] > int(step[2:])
+        return part[step[0]] < int(step[2:])
+
     ans = 0
-    for part in parts:
-        x_var, m_var, a_var, s_var = [
-            int(chunk[2:]) for chunk in part[1:-1].split(',')
-        ]
+    for part in map(parse_part, parts):
         rule = 'in'
         while rule not in 'AR':
             for step, dest in mapping[rule]:
-                if eval(step):
+                if safe_eval(step, part):
                     rule = dest
                     break
         if rule == 'A':
-            ans += x_var + m_var + a_var + s_var
+            ans += sum(part.values())
     return ans
 
 

@@ -4,14 +4,17 @@ import collections
 import operator
 
 
-def read_and_parse(filename: str) -> list[list[int]]:
+Brick = collections.namedtuple('Brick', ['mnx', 'mny', 'mnz', 'mxx', 'mxy', 'mxz'])
+
+
+def read_and_parse(filename: str) -> list[Brick]:
     """parse bricks as 6-'tuples' of ints"""
     with open(filename, "r", encoding="utf-8") as file:
-        return [list(map(int, line.replace('~', ',').split(',')))
+        return [Brick(*map(int, line.replace('~', ',').split(',')))
                 for line in file.read().splitlines()]
 
 
-def build_graphs(bricks: list[list[int]]) -> tuple[list[list[int]], list[set[int]]]:
+def build_graphs(bricks: list[Brick]) -> tuple[list[list[int]], list[set[int]]]:
     """find prerequisite bricks of each brick"""
     bricks.sort(key=operator.itemgetter(2))
     num_bricks = ground_id = len(bricks)
@@ -20,9 +23,11 @@ def build_graphs(bricks: list[list[int]]) -> tuple[list[list[int]], list[set[int
     children = [[] for _ in range(num_bricks + 1)]
     parents = [{ground_id} for _ in range(num_bricks)]
 
-    for brick_id, (mnx, mny, mnz, mxx, mxy, mxz) in enumerate(bricks):
+    for brick_id, brick in enumerate(bricks):
         max_height = 0
-        surface = [(x, y) for x in range(mnx, mxx + 1) for y in range(mny, mxy + 1)]
+        surface = [(x, y)
+                   for x in range(brick.mnx, brick.mxx + 1)
+                   for y in range(brick.mny, brick.mxy + 1)]
 
         for x_coord, y_coord in surface:
             height, parent_id = heightmap[x_coord, y_coord]
@@ -35,13 +40,14 @@ def build_graphs(bricks: list[list[int]]) -> tuple[list[list[int]], list[set[int
         for parent_id in parents[brick_id]:
             children[parent_id].append(brick_id)
 
+        height = brick.mxz - brick.mnz + 1
         for x_coord, y_coord in surface:
-            heightmap[x_coord, y_coord] = max_height + mxz - mnz + 1, brick_id
+            heightmap[x_coord, y_coord] = max_height + height, brick_id
 
     return children, parents
 
 
-def solve_part_one(bricks: list[list[int]]) -> int:
+def solve_part_one(bricks: list[Brick]) -> int:
     """count bricks that are safe to disintegrate"""
     num_bricks = len(bricks)
     children, parents = build_graphs(bricks)
@@ -50,7 +56,7 @@ def solve_part_one(bricks: list[list[int]]) -> int:
     return num_bricks + 1 - unsafe
 
 
-def solve_part_two(bricks: list[list[int]]) -> int:
+def solve_part_two(bricks: list[Brick]) -> int:
     """sum up `calc` over all bricks"""
     num_bricks = len(bricks)
     children, parents = build_graphs(bricks)

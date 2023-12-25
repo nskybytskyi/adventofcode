@@ -56,6 +56,44 @@ def solve_part_two_naive(grid: list[str], steps: int) -> int:
     return total + len(queue)
 
 
+def bfs(grid, start, key):
+    queue = collections.deque([start])
+    distance = {key(start): 0}
+
+    while queue:
+        old_state = queue.popleft()
+        old_group = key(old_state)
+        row, col, parity = old_state
+
+        nei = (row - 1, col), (row, col - 1), (row, col + 1), (row + 1, col)
+        for next_row, next_col in nei:
+            if grid[next_row % len(grid)][next_col % len(grid)] == '#':
+                continue
+
+            new_state = next_row, next_col, 1 - parity
+            new_group = key(new_state)
+
+            if new_group not in distance:
+                queue.append(new_state)
+                distance[new_group] = distance[old_group] + 1
+
+    return distance
+
+
+def count_reachable(distances, steps, size):
+    total = 0
+
+    for group, distance in distances.items():
+        _, _, parity, *_ = group
+        if parity != steps & 1 or steps < distance:
+            continue
+
+        blocks = (steps - distance) // (2 * size) + 1
+        total += blocks**2
+
+    return total
+
+
 def solve_part_two(grid: list[str], steps: int = 26_501_365) -> int:
     size = len(grid)
     midpoint = size >> 1
@@ -65,50 +103,8 @@ def solve_part_two(grid: list[str], steps: int = 26_501_365) -> int:
         return row % size, col % size, parity, row >= midpoint, col >= midpoint
 
     start = midpoint, midpoint, 0
-    queue = collections.deque([start])
-    distance = {key(start): 0}
-    unique = collections.defaultdict(set)
-    unique[key(start)].add(start)
-
-    while queue:
-        old_state = queue.popleft()
-        old_group = key(old_state)
-        row, col, parity = old_state
-
-        nei = (row - 1, col), (row, col - 1), (row, col + 1), (row + 1, col)
-        for next_row, next_col in nei:
-            if grid[next_row % size][next_col % size] == '#':
-                continue
-
-            new_state = next_row, next_col, 1 - parity
-            new_group = key(new_state)
-
-            if (
-                new_group not in distance or (
-                    distance[new_group] == distance[old_group] + 1 and
-                    new_state not in unique[new_group]
-                )
-            ):
-                queue.append(new_state)
-                distance[new_group] = distance[old_group] + 1
-                unique[new_group].add(new_state)
-
-    total = 0
-
-    for group, distance in distance.items():
-        row, col, parity, *_ = group
-        if parity != steps & 1 or steps < distance:
-            continue
-
-        blocks = (steps - distance) // (2 * size) + 1
-        if len(unique[group]) == 1:
-            total += blocks**2
-        elif len(unique[group]) == 2:
-            total += blocks * (blocks + 1)
-        else:
-            assert False
-
-    return total
+    distance = bfs(grid, start, key)
+    return count_reachable(distance, steps, size)
 
 
 def test():

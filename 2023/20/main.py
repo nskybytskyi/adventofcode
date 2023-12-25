@@ -71,6 +71,24 @@ def solve_part_two(graph, types, initial_state, initial_parents) -> int:
     parents = copy.deepcopy(initial_parents)
     first = {}
 
+    def propagate(parent: str, module: str, pulse: bool):
+        if module == "broadcaster":
+            for dest in graph[module]:
+                yield module, dest, pulse
+        elif types[module] == '%':
+            if pulse:
+                return
+            state[module] = not state[module]
+            for dest in graph[module]:
+                yield module, dest, state[module]
+        elif types[module] == '&':
+            parents[module][parent] = pulse
+            outgoing_pulse = not all(parents[module].values())
+            for dest in graph[module]:
+                yield module, dest, outgoing_pulse
+        else:
+            assert False
+
     for button_presses in itertools.count():
         queue = collections.deque([(None, "broadcaster", 0)])
 
@@ -80,25 +98,11 @@ def solve_part_two(graph, types, initial_state, initial_parents) -> int:
                 first[parent] = button_presses + 1
                 if len(first) == len(parents['vr']):
                     return math.lcm(*first.values())
+
             if module not in types:
                 continue
 
-            if module == "broadcaster":
-                for dest in graph[module]:
-                    queue.append((module, dest, pulse))
-            elif types[module] == '%':
-                if pulse:
-                    continue
-                state[module] = not state[module]
-                for dest in graph[module]:
-                    queue.append((module, dest, state[module]))
-            elif types[module] == '&':
-                parents[module][parent] = pulse
-                outgoing_pulse = not all(parents[module].values())
-                for dest in graph[module]:
-                    queue.append((module, dest, outgoing_pulse))
-            else:
-                assert False
+            queue.extend(list(propagate(parent, module, pulse)))
 
     assert False
 
