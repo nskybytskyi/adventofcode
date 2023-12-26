@@ -2,7 +2,16 @@
 """If You Give A Seed A Fertilizer"""
 import collections
 import itertools
-import typing as tp
+from typing import Iterable, Optional
+
+
+def batched(iterable, n):
+    # batched('ABCDEFG', 3) --> ABC DEF G
+    if n < 1:
+        raise ValueError("n must be at least one")
+    it = iter(iterable)
+    while batch := tuple(itertools.islice(it, n)):
+        yield batch
 
 
 ValueRange = collections.namedtuple("ValueRange", ["start", "length"])
@@ -10,20 +19,20 @@ ValueRange = collections.namedtuple("ValueRange", ["start", "length"])
 
 class MappingRange:
     """a linear mapping on a range"""
+
     def __init__(self, destination: int, source: int, length: int):
         self.destination, self.length = destination, length
         self.source_start = source
         self.source_end = source + length
 
-    def apply_to_point(self, value: int) -> tp.Optional[int]:
-        if value < self.source_start or self.source_end <= value:
-            return None
-        offset = value - self.source_start
-        return self.destination + offset
+    def apply_to_point(self, value: int) -> Optional[int]:
+        if self.source_start <= value < self.source_end:
+            return self.destination + value - self.source_start
+        return None
 
     def apply_to_range(
         self, value_range: ValueRange
-    ) -> tp.Optional[tuple[ValueRange, ValueRange]]:
+    ) -> Optional[tuple[ValueRange, ValueRange]]:
         """returns consumed range and its image if any"""
         start = max(self.source_start, value_range.start)
         end = min(self.source_end, value_range.start + value_range.length)
@@ -39,8 +48,9 @@ class MappingRange:
 
 class PiecewiseLinearMapping:
     """a piecewise-linear mapping"""
-    def __init__(self, ranges: list[MappingRange]):
-        self.ranges = ranges
+
+    def __init__(self, ranges: Iterable[MappingRange]):
+        self.ranges = list(ranges)
 
     def apply_to_point(self, value: int) -> int:
         for mapping_range in self.ranges:
@@ -48,7 +58,7 @@ class PiecewiseLinearMapping:
                 return maybe
         return value
 
-    def apply_to_range(self, values: ValueRange) -> tp.Iterable[ValueRange]:
+    def apply_to_range(self, values: ValueRange) -> Iterable[ValueRange]:
         consumed_ranges = []
         for mapping_range in self.ranges:
             if (maybe := mapping_range.apply_to_range(values)) is not None:
@@ -66,37 +76,33 @@ class PiecewiseLinearMapping:
             yield ValueRange(start, values_end - start)
 
 
-def read_and_parse(filename: str) -> tuple[list[int], list[list[MappingRange]]]:
-    def parse_mapping_ranges(map_raw: str) -> list[MappingRange]:
-        return [MappingRange(*map(int, range_raw.split())) for range_raw in map_raw.split('\n')[1:]]
+def parse_mapping(map_raw: str) -> PiecewiseLinearMapping:
+    return PiecewiseLinearMapping(
+        MappingRange(*map(int, range_raw.split()))
+        for range_raw in map_raw.split("\n")[1:]
+    )
 
+
+def read_and_parse(filename: str) -> tuple[list[int], list[PiecewiseLinearMapping]]:
     with open(filename, "r", encoding="utf-8") as file:
-        seeds_raw, *maps_raw = file.read().split('\n\n')
-        seeds = list(map(int, seeds_raw.split(":")[1].split()))
-        maps = list(map(parse_mapping_ranges, maps_raw))
-        return seeds, maps
+        raw_seeds, *raw_mappings = file.read().split("\n\n")
+        seeds = list(map(int, raw_seeds.split(":")[1].split()))
+        mappings = list(map(parse_mapping, raw_mappings))
+        return seeds, mappings
 
 
-def solve_part_one(values: list[int], maps_raw: list[list[MappingRange]]) -> int:
-    for map_raw in maps_raw:
-        map_ = PiecewiseLinearMapping(map_raw)
-        values = [map_.apply_to_point(value) for value in values]
+def solve_part_one(values: list[int], mappings: list[PiecewiseLinearMapping]) -> int:
+    for mapping in mappings:
+        values = list(map(mapping.apply_to_point, values))
     return min(values)
 
 
-def solve_part_two(seeds: list[int], maps_raw: list[list[MappingRange]]) -> int:
-    ranges = [
-        ValueRange(seeds[2 * i], seeds[2 * i + 1]) for i in range(len(seeds) >> 1)
-    ]
-
-    for map_raw in maps_raw:
-        map_ = PiecewiseLinearMapping(map_raw)
+def solve_part_two(seeds: list[int], mappings: list[PiecewiseLinearMapping]) -> int:
+    ranges = list(itertools.starmap(ValueRange, batched(seeds, 2)))
+    for mapping in mappings:
         ranges = list(
-            itertools.chain.from_iterable(
-                map_.apply_to_range(range_) for range_ in ranges
-            )
+            itertools.chain.from_iterable(map(mapping.apply_to_range, ranges))
         )
-
     return min(range_.start for range_ in ranges)
 
 
