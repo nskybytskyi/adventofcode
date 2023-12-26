@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """Trebuchet?!"""
-import string
 
 
 def read_and_parse(filename: str) -> list[str]:
@@ -8,26 +7,29 @@ def read_and_parse(filename: str) -> list[str]:
         return file.read().splitlines()
 
 
-def recover_part_one(line: str) -> int:
-    present = [digit for digit in string.digits if digit in line]
-    first_value = min(present, key=lambda digit: line.index(str(digit)))
-    last_value = max(present, key=lambda digit: line.rindex(str(digit)))
-    return int(first_value + last_value)
+def recover_calibration_value(
+    text: str, words: list[str], values: dict[str, int]
+) -> int:
+    filtered_words = list(filter(text.__contains__, words))
+    first_word = min(filtered_words, key=text.index)
+    last_word = max(filtered_words, key=text.rindex)
+    return 10 * values[first_word] + values[last_word]
 
 
-def recover_part_two(line: str) -> int:
+def build_base_words_and_values() -> tuple[list[str], dict[str, int]]:
+    return list("0123456789"), dict(zip("0123456789", range(10)))
+
+
+def recover_part_one(text: str) -> int:
+    digits, values = build_base_words_and_values()
+    return recover_calibration_value(text, digits, values)
+
+
+def recover_part_two(text: str) -> int:
+    digits, values = build_base_words_and_values()
     words = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
-
-    def value(word: str) -> int:
-        if word in words:
-            return words.index(word) + 1
-        return int(word)
-
-    present = [digit for digit in list(string.digits) + words if digit in line]
-    first_word = min(present, key=lambda digit: line.index(str(digit)))
-    last_word = max(present, key=lambda digit: line.rindex(str(digit)))
-
-    return 10 * value(first_word) + value(last_word)
+    values.update(dict(zip(words, range(1, 10))))
+    return recover_calibration_value(text, digits + words, values)
 
 
 def solve_part_one(lines: list[str]) -> int:
