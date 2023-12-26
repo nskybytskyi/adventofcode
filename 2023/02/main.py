@@ -5,41 +5,45 @@ import functools
 import math
 import operator
 
-Game = list[dict[str, int]]
+
+Draw = tuple[str, int]
+Round = dict[str, int]
+Game = list[Round]
 
 
-def minimal_bag(game: Game) -> collections.Counter:
-    counters = (collections.Counter(handful) for handful in game)
-    return functools.reduce(operator.or_, counters)
+def parse_draw(text: str) -> Draw:
+    raw_balls, color = text.split()
+    return color, int(raw_balls)
+
+
+def parse_round(text: str) -> Round:
+    return dict(map(parse_draw, text.split(", ")))
+
+
+def parse_game(text: str) -> Game:
+    return list(map(parse_round, text.split(": ")[1].split("; ")))
 
 
 def read_and_parse(filename: str) -> list[Game]:
-    games = []
     with open(filename, "r", encoding="utf-8") as file:
-        for line in file.read().splitlines():
-            game = []
-            _, raw_game = line.split(": ")
-            for handful in raw_game.split("; "):
-                draws = {}
-                for draw in handful.split(", "):
-                    balls, color = draw.split()
-                    draws[color] = int(balls)
-                game.append(draws)
-            games.append(game)
-    return games
+        return list(map(parse_game, file.read().splitlines()))
+
+
+def compute_minimal_bag(game: Game) -> collections.Counter[str]:
+    return functools.reduce(operator.or_, map(collections.Counter, game))
 
 
 def solve_part_one(games: list[Game]) -> int:
-    limit = collections.Counter({"red": 12, "green": 13, "blue": 14})
+    upper_bound = collections.Counter({"red": 12, "green": 13, "blue": 14})
     return sum(
         game_id
         for game_id, game in enumerate(games, start=1)
-        if minimal_bag(game) <= limit
+        if compute_minimal_bag(game) <= upper_bound
     )
 
 
 def solve_part_two(games: list[Game]) -> int:
-    return sum(math.prod(minimal_bag(game).values()) for game in games)
+    return sum(math.prod(compute_minimal_bag(game).values()) for game in games)
 
 
 def test():
