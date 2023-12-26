@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Snowverload"""
+import random
 import networkx as nx
+from networkx.algorithms.flow import shortest_augmenting_path
 
 
 def read_and_parse(filename: str):
@@ -15,8 +17,9 @@ def read_and_parse(filename: str):
 
 def solve_part_one(graph) -> int:
     src, *dsts = list(graph.nodes())
+    random.shuffle(dsts)
     for dst in dsts:
-        cut_value, partition = nx.minimum_cut(graph, src, dst)
+        cut_value, partition = nx.minimum_cut(graph, src, dst, flow_func=shortest_augmenting_path)
         if cut_value == 3:
             side1, side2 = partition
             return len(side1) * len(side2)
