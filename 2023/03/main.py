@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 """Gear Ratios"""
-import collections
-import typing as tp
+import math
+import re
+from typing import Iterable
+
+
+Cell = tuple[int, int]
+Segment = tuple[int, int, int]
 
 
 def read_and_parse(filename: str) -> list[str]:
@@ -9,89 +14,68 @@ def read_and_parse(filename: str) -> list[str]:
         return file.read().splitlines()
 
 
-Number = collections.namedtuple("Number", ["row", "start", "end", "value"])
-Symbol = collections.namedtuple("Symbol", ["row", "column"])
-Gear = collections.namedtuple("Gear", ["row", "column", "ratio"])
+def find_symbols_in_grid(
+    grid: list[str], symbols: str = "#$%&*+-/=@"
+) -> Iterable[Cell]:
+    return (
+        (i, j)
+        for i, row in enumerate(grid)
+        for j, char in enumerate(row)
+        if char in symbols
+    )
 
 
-def numbers(nums_grid: list[str]) -> tp.Iterable[Number]:
-    for row_index, row in enumerate(nums_grid):
-        start = None
-
-        for col_index, val in enumerate(row):
-            if start is not None and not val.isdigit():
-                if (value := row[start:col_index]) != "-":
-                    yield Number(row_index, start, col_index, int(value))
-                start = None
-
-            if start is None and (val.isdigit() or val == "-"):
-                start = col_index
-
-        if start is not None and (value := row[start:]) != "-":
-            yield Number(row_index, start, len(row), int(value))
+def find_numbers_in_grid(grid: list[str]) -> Iterable[Segment]:
+    return (
+        (i, n.start(), n.end())
+        for i, row in enumerate(grid)
+        for n in re.finditer(r"\d+", row)
+    )
 
 
-def adjacent(nums_grid: list[str], number: Number) -> tp.Iterable[Symbol]:
-    for row in (number.row - 1, number.row, number.row + 1):
-        for col in range(number.start - 1, number.end + 1):
-            if (
-                0 <= row < len(nums_grid)
-                and 0 <= col < len(nums_grid[row])
-                and nums_grid[row][col] != "."
-                and not nums_grid[row][col].isdigit()
-            ):
-                yield Symbol(row, col)
+def find_adjacent_pairs(grid: list[str]) -> dict[Cell, list[int]]:
+    pairs = {symbol: [] for symbol in find_symbols_in_grid(grid)}
+
+    for row, start, end in find_numbers_in_grid(grid):
+        edge = {
+            (row, col)
+            for row in (row - 1, row, row + 1)
+            for col in range(start - 1, end + 1)
+        }
+
+        for symbol in edge & pairs.keys():
+            pairs[symbol].append(int(grid[row][start:end]))
+
+    return pairs
 
 
-def part_numbers(nums_grid: list[str]) -> tp.Iterable[Number]:
-    for number in numbers(nums_grid):
-        if any(adjacent(nums_grid, number)):
-            yield number
+def solve_part_one(engine_schematic: list[str]) -> int:
+    pairs = find_adjacent_pairs(engine_schematic)
+    return sum(map(sum, pairs.values()))
 
 
-def symbols(nums_grid: list[str]) -> tp.Iterable[Symbol]:
-    for row_index, row in enumerate(nums_grid):
-        for col_index, val in enumerate(row):
-            if val != "." and not val.isdigit():
-                yield Symbol(row_index, col_index)
-
-
-def gears(nums_grid: list[str]) -> tp.Iterable[Gear]:
-    counter = collections.Counter()
-    ratios = collections.defaultdict(list)
-
-    for number in numbers(nums_grid):
-        for symbol in adjacent(nums_grid, number):
-            counter[symbol] += 1
-            ratios[symbol].append(number.value)
-
-    for symbol, count in counter.items():
-        if count == 2:
-            ratio = ratios[symbol][0] * ratios[symbol][1]
-            yield Gear(symbol.row, symbol.column, ratio)
-
-
-def solve_part_one(nums_grid: list[str]) -> int:
-    return sum(abs(part_number.value) for part_number in part_numbers(nums_grid))
-
-
-def solve_part_two(nums_grid: list[str]) -> int:
-    return sum(gear.ratio for gear in gears(nums_grid))
+def solve_part_two(engine_schematic: list[str]) -> int:
+    pairs = find_adjacent_pairs(engine_schematic)
+    return sum(
+        math.prod(nums)
+        for (row, col), nums in pairs.items()
+        if engine_schematic[row][col] == "*" and len(nums) == 2
+    )
 
 
 def test():
-    nums_grid = read_and_parse("example.txt")
-    part_one_answer = solve_part_one(nums_grid)
-    assert part_one_answer == 4361
-    part_two_answer = solve_part_two(nums_grid)
+    engine_schematic = read_and_parse("example.txt")
+    part_one_answer = solve_part_one(engine_schematic)
+    assert part_one_answer == 4_361
+    part_two_answer = solve_part_two(engine_schematic)
     assert part_two_answer == 467_835
 
 
 def main():
-    nums_grid = read_and_parse("input.txt")
-    part_one_answer = solve_part_one(nums_grid)
+    engine_schematic = read_and_parse("input.txt")
+    part_one_answer = solve_part_one(engine_schematic)
     print(f"Part One: {part_one_answer}")
-    part_two_answer = solve_part_two(nums_grid)
+    part_two_answer = solve_part_two(engine_schematic)
     print(f"Part Two: {part_two_answer}")
 
 
