@@ -1,33 +1,43 @@
 #!/usr/bin/env python3
 """Scratchcards"""
+import collections
 
 
-def read_and_parse(filename: str) -> list[tuple[list[int], list[int]]]:
-    scratchcards = []
+Scratchcard = collections.namedtuple(
+    "Scratchcard", ["winning_numbers", "numbers_you_have"]
+)
+
+
+def parse_numbers(text: str) -> set[int]:
+    return set(map(int, text.split()))
+
+
+def parse_scratchcard(text: str) -> Scratchcard:
+    return Scratchcard(*map(parse_numbers, text.split(": ")[1].split(" | ")))
+
+
+def read_and_parse(filename: str) -> list[Scratchcard]:
     with open(filename, "r", encoding="utf-8") as file:
-        for line in file.read().splitlines():
-            _, nums = line.split(": ")
-            win_chunk, my_chunk = nums.split(" | ")
-            win_nums = list(map(int, win_chunk.split()))
-            my_nums = list(map(int, my_chunk.split()))
-            scratchcards.append((win_nums, my_nums))
-    return scratchcards
+        return list(map(parse_scratchcard, file.read().splitlines()))
 
 
-def solve_part_one(scratchcards: list[tuple[list[int], list[int]]]) -> int:
-    score = 0
-    for win_nums, my_nums in scratchcards:
-        if matches := len(set(win_nums) & set(my_nums)):
-            score += 1 << (matches - 1)
-    return score
+def count_matches(scratchcard: Scratchcard) -> int:
+    return len(scratchcard.winning_numbers & scratchcard.numbers_you_have)
 
 
-def solve_part_two(scratchcards: list[tuple[list[int], list[int]]]) -> int:
+def solve_part_one(scratchcards: list[Scratchcard]) -> int:
+    return sum(
+        1 << (matches - 1)
+        for scratchcard in scratchcards
+        if (matches := count_matches(scratchcard))
+    )
+
+
+def solve_part_two(scratchcards: list[Scratchcard]) -> int:
     copies = [1] * len(scratchcards)
-    for i, (win_nums, my_nums) in enumerate(scratchcards):
-        matches = len(set(win_nums) & set(my_nums))
-        for j in range(i + 1, i + matches + 1):
-            copies[j] += copies[i]
+    for i, scratchcard in enumerate(scratchcards):
+        for j in range(count_matches(scratchcard)):
+            copies[i + 1 + j] += copies[i]
     return sum(copies)
 
 
