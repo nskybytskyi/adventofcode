@@ -4,31 +4,35 @@ import bisect
 import math
 
 
-def read_and_parse(filename: str) -> tuple[list[int], list[int]]:
+def parse_nums(text: str) -> list[int]:
+    return list(map(int, text.split()))
+
+
+def read_and_parse(filename: str) -> tuple[list[int], ...]:
     with open(filename, "r", encoding="utf-8") as file:
-        raw_times, raw_dists = file.read().splitlines()
-        times = list(map(int, raw_times.split(":")[1].split()))
-        dists = list(map(int, raw_dists.split(":")[1].split()))
-        return times, dists
+        lines = (line.split(":")[1] for line in file.read().splitlines())
+        return tuple(map(parse_nums, lines))
 
 
 def solve_part_one(times: list[int], dists: list[int]) -> int:
-    gen = (
+    return math.prod(
         sum((time - hold) * hold > dist for hold in range(1, time))
         for time, dist in zip(times, dists)
     )
-    return math.prod(gen)
+
+
+def fix_kerning(nums: list[int]) -> int:
+    return int("".join(map(str, nums)))
 
 
 def solve_part_two(times: list[int], dists: list[int]) -> int:
-    time = int("".join(map(str, times)))
-    dist = int("".join(map(str, dists)))
-    lower_bound = bisect.bisect_left(
+    time, dist = map(fix_kerning, (times, dists))
+    upper_bound = bisect.bisect_right(
         range(time // 2 + 1),
-        True,
-        key=lambda hold: (time - hold) * hold > dist,
+        dist,
+        key=lambda hold: (time - hold) * hold,
     )
-    return time - 2 * lower_bound + 1
+    return time - 2 * upper_bound + 1
 
 
 def test():
