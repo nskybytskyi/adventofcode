@@ -5,6 +5,8 @@ from typing import Iterable
 
 
 class Grid:
+    """2d pipe grid with complex indexing"""
+
     __START = "S"
 
     __DIRECTIONS = {
