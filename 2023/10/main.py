@@ -1,81 +1,88 @@
 #!/usr/bin/env python3
 """Pipe Maze"""
-import collections
+import itertools
+from typing import Iterable
 
 
-def read_and_parse(filename: str) -> list[str]:
-    with open(filename, "r", encoding="utf-8") as file:
-        return file.read().splitlines()
+class Grid:
+    __START = "S"
 
+    __DIRECTIONS = {
+        ".": [],
+        "|": [1, -1],
+        "-": [1j, -1j],
+        "L": [1j, -1],
+        "J": [-1, -1j],
+        "7": [-1j, 1],
+        "F": [1j, 1],
+        __START: [1, 1j, -1, -1j],
+    }
 
-def nei(grid, row, col):
-    neighbors = [(row - 1, col), (row, col - 1), (row, col + 1), (row + 1, col)]
+    def __init__(self, raw: list[str]):
+        self.raw = raw[:]
 
-    if grid[row][col] == "S":
-        return [
-            (nr, nc)
-            for nr, nc in neighbors
-            if (row, col) in nei(grid, nr, nc)
-        ]
+    def __contains__(self, cell: complex) -> bool:
+        row, col = int(cell.real), int(cell.imag)
+        return 0 <= row < len(self.raw) and 0 <= col < len(self.raw[row])
 
-    mapping = {'.': [], '|': [0, 3], '-': [1, 2],
-               'L': [0, 2], 'J': [0, 1], '7': [1, 3], 'F': [2, 3]}
-    return [neighbors[idx] for idx in mapping[grid[row][col]]]
+    def __getitem__(self, cell: complex) -> str:
+        return self.raw[int(cell.real)][int(cell.imag)]
 
+    def index(self, target: str) -> complex:
+        for i, row in enumerate(self.raw):
+            for j, char in enumerate(row):
+                if char == target:
+                    return i + j * 1j
+        assert False
 
-def find_s(grid):
-    rows, cols = len(grid), len(grid[0])
-    for row in range(rows):
-        for col in range(cols):
-            if grid[row][col] == "S":
-                return row, col
-    assert False
-
-
-def solve_part_one(pipe_grid: list[str]) -> int:
-    rows, cols = len(pipe_grid), len(pipe_grid[0])
-    start_row, start_col = find_s(pipe_grid)
-    queue = collections.deque([(start_row, start_col)])
-    dist = [[-1] * cols for _ in range(rows)]
-    dist[start_row][start_col] = 0
-
-    while queue:
-        row, col = queue.popleft()
-        for next_row, next_col in nei(pipe_grid, row, col):
-            if 0 <= next_row < rows and 0 <= next_col < cols and dist[next_row][next_col] == -1:
-                queue.append((next_row, next_col))
-                dist[next_row][next_col] = dist[row][col] + 1
-
-    return max(dist[row][col] for row in range(rows) for col in range(cols))
-
-
-def area(fig: list[tuple[int, int]]) -> float:
-    res = 0
-    for i, curr in enumerate(fig):
-        prev = fig[i - 1] if i else fig[-1]
-        res += (prev[0] - curr[0]) * (prev[1] + curr[1])
-    return abs(res / 2)
-
-
-def solve_part_two(pipe_grid: list[str]) -> float:
-    rows, cols = len(pipe_grid), len(pipe_grid[0])
-    start_row, start_col = find_s(pipe_grid)
-    path = [(start_row, start_col)]
-
-    while len(path) == 1 or path[-1] != path[0]:
-        row, col = path[-1]
-        for next_row, next_col in nei(pipe_grid, row, col):
+    def find_neighbors(self, cell: complex) -> Iterable[complex]:
+        for direction in Grid.__DIRECTIONS[self[cell]]:
             if (
-                0 <= next_row < rows
-                and 0 <= next_col < cols
-                and (len(path) < 2 or (next_row, next_col) != path[-2])
+                (candidate := cell + direction) in self
+                and self[candidate] != "#"
+                and (
+                    self[cell] != Grid.__START or cell in self.find_neighbors(candidate)
+                )
             ):
-                path.append((next_row, next_col))
-                break
+                yield candidate
 
-    bound = len(path) - 1
-    path = [(r, c) for r, c in path if pipe_grid[r][c] not in "-|"]
-    return area(path) + 1 - bound / 2
+    def find_closed_path(self, start: str = __START) -> list[complex]:
+        path = [self.index(start)]
+
+        while len(path) < 2 or path[-1] != path[0]:
+            path.append(
+                next(
+                    cell
+                    for cell in self.find_neighbors(path[-1])
+                    if len(path) < 2 or cell != path[-2]
+                )
+            )
+
+        return path
+
+
+def read_and_parse(filename: str) -> Grid:
+    with open(filename, "r", encoding="utf-8") as file:
+        return Grid(file.read().splitlines())
+
+
+def solve_part_one(grid: Grid) -> int:
+    return len(grid.find_closed_path()) // 2
+
+
+def calculate_polygon_area(polygon: list[complex]) -> float:
+    return abs(
+        sum(
+            (curr.real - prev.real) * (prev.imag + curr.imag) / 2
+            for prev, curr in itertools.pairwise(polygon)
+        )
+    )
+
+
+def solve_part_two(grid: Grid) -> int:
+    polygon = grid.find_closed_path()
+    area = calculate_polygon_area(polygon)
+    return int(area + 1 - (len(polygon) - 1) / 2)
 
 
 def test():
