@@ -2,42 +2,45 @@
 """Haunted Wasteland"""
 import itertools
 import math
-import typing as tp
+from typing import Callable
 
-Graph = tp.Mapping[str, tuple[str, str]]
+
+Graph = dict[str, tuple[str, str]]
+
+
+def parse_edge(text: str) -> tuple[str, tuple[str, str]]:
+    return text[:3], (text[7:10], text[12:15])
 
 
 def read_and_parse(filename: str) -> tuple[str, Graph]:
     with open(filename, "r", encoding="utf-8") as file:
-        instructions, _, *graph_lines = file.read().splitlines()
-        graph = {line[:3]: (line[7:10], line[12:15]) for line in graph_lines}
-        return instructions, graph
+        instructions, raw_graph = file.read().split("\n\n")
+        return instructions, dict(map(parse_edge, raw_graph.split("\n")))
 
 
-def distance(
+def calculate_period(
     graph: Graph,
     instructions: str,
     node: str,
-    is_end: tp.Callable[[str], bool],
+    is_end: Callable[[str], bool],
 ) -> int:
     for step, instruction in enumerate(itertools.cycle(instructions), start=1):
-        node = graph[node][instruction == "R"]
-        if is_end(node):
+        if is_end(node := graph[node][instruction == "R"]):
             return step
     assert False
 
 
 def solve_part_one(instructions: str, graph: Graph) -> int:
-    return distance(graph, instructions, "AAA", lambda node: node == "ZZZ")
+    return calculate_period(graph, instructions, "AAA", lambda node: node == "ZZZ")
 
 
 def solve_part_two(instructions: str, graph: Graph) -> int:
-    distances = (
-        distance(graph, instructions, node, lambda node: node.endswith("Z"))
+    gen = (
+        calculate_period(graph, instructions, node, lambda node: node.endswith("Z"))
         for node in graph
         if node.endswith("A")
     )
-    return math.lcm(*distances)
+    return math.lcm(*gen)
 
 
 def test():
