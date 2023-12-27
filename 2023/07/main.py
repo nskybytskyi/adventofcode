@@ -3,22 +3,26 @@
 import collections
 
 
-def read_and_parse(filename: str) -> list[tuple[str, int]]:
-    games = []
+Game = collections.namedtuple("Game", ["hand", "bid"])
+
+
+def parse_game(text: str) -> Game:
+    hand, bid = text.split()
+    return Game(hand, int(bid))
+
+
+def read_and_parse(filename: str) -> list[Game]:
     with open(filename, "r", encoding="utf-8") as file:
-        for line in file.read().splitlines():
-            hand, bid = line.split()
-            games.append((hand, int(bid)))
-    return games
+        return list(map(parse_game, file.read().splitlines()))
 
 
-def part1_key(hand: str) -> list[int]:
+def default_key(hand: str) -> list[int]:
     hand_type = sorted(collections.Counter(hand).values(), reverse=True)
     hand_value = [-"AKQJT98765432".index(card) for card in hand]
     return hand_type + hand_value
 
 
-def part2_key(hand: str) -> list[int]:
+def jokers_key(hand: str) -> list[int]:
     counter = collections.Counter(hand)
     jokers = counter["J"]
     del counter["J"]
@@ -30,18 +34,16 @@ def part2_key(hand: str) -> list[int]:
     return hand_type + hand_value
 
 
-def score(ordered_games: list[tuple[str, int]]) -> int:
-    return sum(rank * bid for rank, (_, bid) in enumerate(ordered_games, start=1))
+def score(games: list[Game]) -> int:
+    return sum(rank * bid for rank, (_, bid) in enumerate(games, start=1))
 
 
-def solve_part_one(camel_cards: list[tuple[str, int]]) -> int:
-    camel_cards.sort(key=lambda pair: part1_key(pair[0]))
-    return score(camel_cards)
+def solve_part_one(games: list[Game]) -> int:
+    return score(sorted(games, key=lambda game: default_key(game.hand)))
 
 
-def solve_part_two(camel_cards: list[tuple[str, int]]) -> int:
-    camel_cards.sort(key=lambda pair: part2_key(pair[0]))
-    return score(camel_cards)
+def solve_part_two(games: list[Game]) -> int:
+    return score(sorted(games, key=lambda game: jokers_key(game.hand)))
 
 
 def test():
