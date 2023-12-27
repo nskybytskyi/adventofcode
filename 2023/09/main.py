@@ -3,9 +3,13 @@
 import itertools
 
 
+def parse_nums(text: str) -> list[int]:
+    return list(map(int, text.split()))
+
+
 def read_and_parse(filename: str) -> list[list[int]]:
     with open(filename, "r", encoding="utf-8") as file:
-        return [list(map(int, line.split())) for line in file.read().splitlines()]
+        return list(map(parse_nums, file.read().splitlines()))
 
 
 def predict(nums: list[int]) -> int:
