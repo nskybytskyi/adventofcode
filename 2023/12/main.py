@@ -1,66 +1,83 @@
 #!/usr/bin/env python3
 """Hot Springs"""
+import collections
 import functools
 import itertools
 
 
-def read_and_parse(filename: str) -> list[tuple[str, list[int]]]:
+Record = collections.namedtuple("Record", ["damaged", "groups"])
+
+
+def parse_record(text: str) -> Record:
+    records, raw_nums = text.split()
+    nums = list(map(int, raw_nums.split(",")))
+    return Record(records, nums)
+
+
+def read_and_parse(filename: str) -> list[Record]:
     """condition records of which hot springs are damaged"""
-    rows = []
     with open(filename, "r", encoding="utf-8") as file:
-        for line in file.read().splitlines():
-            records, raw_nums = line.split()
-            nums = list(map(int, raw_nums.split(",")))
-            rows.append((records, nums))
-    return rows
+        return list(map(parse_record, file.read().splitlines()))
 
 
-def match(records: str, nums: list[int]) -> bool:
+def match(restored: tuple[str, ...], groups: list[int]) -> bool:
     """does s fit the description of nums"""
-    return nums == [
+    return groups == [
         sum(1 for _ in grouper)
-        for key, grouper in itertools.groupby(records)
+        for key, grouper in itertools.groupby(restored)
         if key == "#"
     ]
 
-def brute_force(records: str, nums: list[int]) -> int:
+
+def brute_force(record: Record) -> int:
     """try all combinations of states"""
-    gen = ("#." if letter == "?" else letter for letter in records)
-    return sum(match(candidate, nums) for candidate in itertools.product(*gen))
+    gen = ("#." if letter == "?" else letter for letter in record.damaged)
+    return sum(match(candidate, record.groups) for candidate in itertools.product(*gen))
 
 
-def dynamic_programming(records: str, nums: list[int]) -> int:
+def dynamic_programming(record: Record) -> int:
     """count continuations from a given state"""
 
     @functools.cache
-    def num_ways(i: int, j: int, curr: int, prev: str) -> int:
-        if i == len(records):
-            return j == len(nums)
+    def num_ways(
+        spring_index: int, group_index: int, current_group: int, last: str
+    ) -> int:
+        if spring_index == len(record.damaged):
+            return group_index == len(record.groups)
 
-        ans = 0
+        total = 0
 
-        if records[i] != "#" and not curr:
-            ans += num_ways(i + 1, j, 0, ".")
+        if record.damaged[spring_index] != "#" and not current_group:
+            total += num_ways(spring_index + 1, group_index, 0, ".")
 
-        if records[i] != "." and (curr or prev != "#") and j < len(nums):
-            if curr + 1 == nums[j]:
-                ans += num_ways(i + 1, j + 1, 0, "#")
+        if (
+            record.damaged[spring_index] != "."
+            and (current_group or last != "#")
+            and group_index < len(record.groups)
+        ):
+            if current_group + 1 == record.groups[group_index]:
+                total += num_ways(spring_index + 1, group_index + 1, 0, "#")
             else:
-                ans += num_ways(i + 1, j, curr + 1, "#")
+                total += num_ways(spring_index + 1, group_index, current_group + 1, "#")
 
-        return ans
+        return total
 
     return num_ways(0, 0, 0, ".")
 
 
-def solve_part_one(springs: list[tuple[str, list[int]]]) -> int:
+def solve_part_one(records: list[Record]) -> int:
     """count arrangements that fit the description"""
-    return sum(brute_force(s, nums) for s, nums in springs)
+    return sum(map(brute_force, records))
 
 
-def solve_part_two(springs: list[tuple[str, list[int]]]) -> int:
+def unfold_record(record: Record) -> Record:
+    return Record("?".join(5 * [record.damaged]), 5 * record.groups)
+
+
+def solve_part_two(records: list[Record]) -> int:
     """unfolded records"""
-    return sum(dynamic_programming("?".join(5 * [s]), 5 * nums) for s, nums in springs)
+    unfolded_records = map(unfold_record, records)
+    return sum(map(dynamic_programming, unfolded_records))
 
 
 def test():
