@@ -7,25 +7,28 @@ def read_and_parse(filename: str) -> list[str]:
         return file.read().splitlines()
 
 
-def find_rows(grid: list[str], expansion_factor: int) -> list[int]:
-    rows = []
+def find_row_frequencies(
+    grid: list[str], expansion_factor: int
+) -> list[tuple[int, int]]:
+    row_frequencies = []
     expanded_row = 0
 
     for row in grid:
-        if "#" in row:
+        if frequency := row.count("#"):
             expanded_row += 1
-            rows.extend([expanded_row] * row.count("#"))
+            row_frequencies.append((expanded_row, frequency))
         else:
             expanded_row += expansion_factor
 
-    return rows
+    return row_frequencies
 
 
-def row_distance_sum(rows: list[int]) -> int:
-    distance_sum = row_sum = 0
-    for row_index, row in enumerate(rows):
-        distance_sum += row_index * row - row_sum
-        row_sum += row
+def row_distance_sum(row_frequencies: list[tuple[int, int]]) -> int:
+    distance_sum = row_sum = row_count = 0
+    for row, frequency in row_frequencies:
+        distance_sum += frequency * (row_count * row - row_sum)
+        row_sum += frequency * row
+        row_count += frequency
     return distance_sum
 
 
@@ -34,9 +37,9 @@ def solve_part_one(universe: list[str]) -> int:
 
 
 def solve_part_two(universe: list[str], expansion_factor: int) -> int:
-    row_sum = row_distance_sum(find_rows(universe, expansion_factor))
+    row_sum = row_distance_sum(find_row_frequencies(universe, expansion_factor))
     transpose = ["".join(column) for column in zip(*universe)]
-    column_sum = row_distance_sum(find_rows(transpose, expansion_factor))
+    column_sum = row_distance_sum(find_row_frequencies(transpose, expansion_factor))
     return row_sum + column_sum
 
 
