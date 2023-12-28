@@ -4,6 +4,8 @@ import copy
 
 
 class Grid:
+    """2d grid supporing reflections and rotations"""
+
     def __init__(self, raw: list[str]):
         self.raw = raw[:]
 
