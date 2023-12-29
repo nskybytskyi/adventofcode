@@ -39,13 +39,13 @@ class Grid:
             yield location + direction, direction
 
 
-def breadth_first_search(grid: Grid, start: tuple[complex, complex]) -> int:
+def breadth_first_search(contraption: Grid, start: tuple[complex, complex]) -> int:
     seen = {start}
     queue = collections.deque([start])
 
     while queue:
-        for node in grid.find_neighbors(*queue.popleft()):
-            if node[0] in grid and node not in seen:
+        for node in contraption.find_neighbors(*queue.popleft()):
+            if node[0] in contraption and node not in seen:
                 seen.add(node)
                 queue.append(node)
 
@@ -57,34 +57,34 @@ def read_and_parse(filename: str) -> Grid:
         return Grid(file.read().splitlines())
 
 
-def solve_part_one(grid: Grid) -> int:
-    return breadth_first_search(grid, (0, 1j))
+def solve_part_one(contraption: Grid) -> int:
+    return breadth_first_search(contraption, (0, 1j))
 
 
-def solve_part_two(grid: Grid) -> int:
-    rows, cols = grid.shape()
+def solve_part_two(contraption: Grid) -> int:
+    rows, cols = contraption.shape()
     candidates = (
         [(row, 1j) for row in range(rows)]
         + [(row + (cols - 1) * 1j, -1j) for row in range(rows)]
         + [(col * 1j, 1) for col in range(cols)]
         + [(rows - 1 + col * 1j, -1) for col in range(cols)]
     )
-    return max(breadth_first_search(grid, candidate) for candidate in candidates)
+    return max(breadth_first_search(contraption, candidate) for candidate in candidates)
 
 
 def test():
-    grid = read_and_parse("example.txt")
-    part_one_answer = solve_part_one(grid)
+    contraption = read_and_parse("example.txt")
+    part_one_answer = solve_part_one(contraption)
     assert part_one_answer == 46
-    part_two_answer = solve_part_two(grid)
+    part_two_answer = solve_part_two(contraption)
     assert part_two_answer == 51
 
 
 def main():
-    grid = read_and_parse("input.txt")
-    part_one_answer = solve_part_one(grid)
+    contraption = read_and_parse("input.txt")
+    part_one_answer = solve_part_one(contraption)
     print(f"Part One: {part_one_answer}")
-    part_two_answer = solve_part_two(grid)
+    part_two_answer = solve_part_two(contraption)
     print(f"Part Two: {part_two_answer}")
 
 
