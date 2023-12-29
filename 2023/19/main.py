@@ -3,118 +3,123 @@
 import collections
 import copy
 import math
+from typing import Iterable
 
 
-def read_and_parse(filename: str) -> tuple[list[str], list[str]]:
+Part = dict[str, int]
+Block = dict[str, range]
+
+
+def parse_part(raw: str) -> Part:
+    return {chunk[0]: int(chunk[2:]) for chunk in raw[1:-1].split(",")}
+
+
+class Rule:
+    """a singular rule like x>10"""
+
+    __OPERATORS = {
+        ">": int.__gt__,
+        "<": int.__lt__,
+    }
+
+    def __init__(self, raw: str):
+        self.name = raw[0]
+        self.sign = raw[1]
+        self.value = int(raw[2:])
+
+    def apply_to_part(self, part: Part) -> bool:
+        return Rule.__OPERATORS[self.sign](part[self.name], self.value)
+
+    def apply_to_block(self, block: Block) -> tuple[Block, Block]:
+        result = copy.deepcopy(block)
+        in_ref, out_ref = block[self.name], result[self.name]
+
+        if self.sign == ">":
+            block[self.name] = range(in_ref.start, min(self.value + 1, in_ref.stop))
+            result[self.name] = range(max(out_ref.start, self.value + 1), out_ref.stop)
+        else:
+            block[self.name] = range(max(in_ref.start, self.value), in_ref.stop)
+            result[self.name] = range(out_ref.start, min(self.value, out_ref.stop))
+
+        return result, block
+
+
+class Workflow:
+    """a named collection of rules with destinations"""
+
+    def __init__(self, raw: str):
+        self.name, rest = raw.split("{")
+        self.rules, self.destinations = [], []
+        *steps, final = rest[:-1].split(",")
+
+        for step in steps:
+            raw_rule, destination = step.split(":")
+            self.rules.append(Rule(raw_rule))
+            self.destinations.append(destination)
+
+        self.destinations.append(final)
+
+    def apply_to_part(self, part: Part) -> str:
+        for rule, destination in zip(self.rules, self.destinations):
+            if rule.apply_to_part(part):
+                return destination
+        return self.destinations[-1]
+
+    def apply_to_block(self, block: Block) -> Iterable[tuple[str, Block]]:
+        for rule, destination in zip(self.rules, self.destinations):
+            result, block = rule.apply_to_block(block)
+            yield destination, result
+        yield self.destinations[-1], block
+
+
+def read_and_parse(filename: str) -> tuple[list[Workflow], list[Part]]:
     with open(filename, "r", encoding="utf-8") as file:
-        rules, parts = file.read().split('\n\n')
-        return rules.split('\n'), parts.split('\n')
+        raw_workflows, raw_parts = file.read().split("\n\n")
+        workflows = list(map(Workflow, raw_workflows.split("\n")))
+        parts = list(map(parse_part, raw_parts.split("\n")))
+        return workflows, parts
 
 
-def parse_rules(rules):
-    mapping = {}
-    for rule in rules:
-        name, steps = rule.split('{')
-        mapping[name] = []
-        for step in steps[:-1].split(','):
-            if ':' in step:
-                mapping[name].append(step.split(':'))
-            else:
-                mapping[name].append(('True', step))
-    return mapping
+def solve_part_one(workflows: list[Workflow], parts: list[Part]) -> int:
+    mapping = {workflow.name: workflow for workflow in workflows}
+
+    total = 0
+    for part in parts:
+        name = "in"
+        while name not in "AR":
+            name = mapping[name].apply_to_part(part)
+        if name == "A":
+            total += sum(part.values())
+    return total
 
 
-def solve_part_one(rules, parts) -> int:
-    mapping = parse_rules(rules)
+def solve_part_two(workflows: list[Workflow]) -> int:
+    mapping = {workflow.name: workflow for workflow in workflows}
 
-    def parse_part(raw: str) -> dict[str, int]:
-        return {chunk[0]: int(chunk[2:]) for chunk in raw[1:-1].split(',')}
-
-    def safe_eval(step: str, part: dict[str, int]) -> bool:
-        if step == 'True':
-            return True
-
-        if step[1] == '>':
-            return part[step[0]] > int(step[2:])
-        return part[step[0]] < int(step[2:])
-
-    ans = 0
-    for part in map(parse_part, parts):
-        rule = 'in'
-        while rule not in 'AR':
-            for step, dest in mapping[rule]:
-                if safe_eval(step, part):
-                    rule = dest
-                    break
-        if rule == 'A':
-            ans += sum(part.values())
-    return ans
-
-
-class Block:
-    """4d range of parts"""
-    def __init__(self, *args):
-        mnx, mxx, mnm, mxm, mna, mxa, mns, mxs = args
-        self.lower_bound = {}
-        self.upper_bound = {}
-        self.lower_bound['x'], self.upper_bound['x'] = mnx, mxx
-        self.lower_bound['m'], self.upper_bound['m'] = mnm, mxm
-        self.lower_bound['a'], self.upper_bound['a'] = mna, mxa
-        self.lower_bound['s'], self.upper_bound['s'] = mns, mxs
-
-    def split(self, step):
-        if step == 'True':
-            return self, Block(0, -1, 0, -1, 0, -1, 0, -1)
-        var, sign, *val = step
-        val = int(''.join(val))
-
-        if sign == '>':
-            good, bad = copy.deepcopy(self), copy.deepcopy(self)
-            good.lower_bound[var] = max(good.lower_bound[var], val + 1)
-            bad.upper_bound[var] = min(bad.upper_bound[var], val)
-            return good, bad
-
-        good, bad = copy.deepcopy(self), copy.deepcopy(self)
-        good.upper_bound[var] = min(good.upper_bound[var], val - 1)
-        bad.lower_bound[var] = max(bad.lower_bound[var], val)
-        return good, bad
-
-    def __bool__(self):
-        return self.size() > 0
-
-    def size(self):
-        return math.prod((self.upper_bound[c] - self.lower_bound[c] + 1) for c in 'xmas')
-
-
-def solve_part_two(rules) -> int:
-    ans = 0
-    mapping = parse_rules(rules)
-    queue = collections.deque([('in', Block(1, 4_000, 1, 4_000, 1, 4_000, 1, 4_000))])
+    total = 0
+    queue = collections.deque([(str("in"), {key: range(1, 4001) for key in "xmas"})])
     while queue:
-        rule, block = queue.popleft()
-        if rule == 'A':
-            ans += block.size()
-        elif rule != 'R':
-            for step, dest in mapping[rule]:
-                good, block = block.split(step)
-                if good:
-                    queue.append((dest, good))
-    return ans
+        name, block = queue.popleft()
+        if name == "A":
+            total += math.prod(map(len, block.values()))
+        elif name != "R":
+            queue.extend(mapping[name].apply_to_block(block))
+    return total
 
 
 def test():
-    rules, parts = read_and_parse("example.txt")
-    part_one_answer = solve_part_one(rules, parts)
+    workflows, parts = read_and_parse("example.txt")
+    part_one_answer = solve_part_one(workflows, parts)
     assert part_one_answer == 19_114
-    part_two_answer = solve_part_two(rules)
+    part_two_answer = solve_part_two(workflows)
     assert part_two_answer == 167_409_079_868_000
 
 
 def main():
-    rules, parts = read_and_parse("input.txt")
-    part_one_answer = solve_part_one(rules, parts)
+    workflows, parts = read_and_parse("input.txt")
+    part_one_answer = solve_part_one(workflows, parts)
     print(f"Part One: {part_one_answer}")
-    part_two_answer = solve_part_two(rules)
+    part_two_answer = solve_part_two(workflows)
     print(f"Part Two: {part_two_answer}")
 
 
